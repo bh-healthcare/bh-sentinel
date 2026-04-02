@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: Lint
+        run: |
+          ruff check packages/ training/ deployment/aws-lambda/handler.py
+          ruff format --check packages/ training/ deployment/aws-lambda/handler.py
+
+      - name: Verify vendored config matches source
+        run: diff -r config/ packages/bh-sentinel-core/src/bh_sentinel/core/_default_config/
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install packages
+        run: |
+          pip install -e "packages/bh-sentinel-core[dev]"
+          pip install -e "packages/bh-sentinel-ml[dev]"
+
+      - name: Test bh-sentinel-core
+        run: python -m pytest packages/bh-sentinel-core/tests/ -v
+
+      - name: Test bh-sentinel-ml
+        run: python -m pytest packages/bh-sentinel-ml/tests/ -v

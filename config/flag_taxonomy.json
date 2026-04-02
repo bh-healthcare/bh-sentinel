@@ -1,0 +1,270 @@
+{
+  "taxonomy_version": "1.0.0",
+  "domains": [
+    {
+      "id": "self_harm",
+      "name": "Self-Harm and Suicidal Ideation",
+      "flags": [
+        {
+          "flag_id": "SH-001",
+          "name": "Passive death wish",
+          "description": "Wish to be dead, wish to not wake up.",
+          "default_severity": "HIGH",
+          "c_ssrs_mapping": "Wish to be Dead"
+        },
+        {
+          "flag_id": "SH-002",
+          "name": "Active suicidal ideation, nonspecific",
+          "description": "General thoughts about ending life.",
+          "default_severity": "CRITICAL",
+          "c_ssrs_mapping": "Non-Specific Active Suicidal Thoughts"
+        },
+        {
+          "flag_id": "SH-003",
+          "name": "Active suicidal ideation, with method",
+          "description": "Thoughts about ending life with a specific method.",
+          "default_severity": "CRITICAL",
+          "c_ssrs_mapping": "Active Suicidal Ideation with Any Methods (Not Plan) without Intent to Act"
+        },
+        {
+          "flag_id": "SH-004",
+          "name": "Active suicidal ideation, with plan",
+          "description": "Specific plan for suicide.",
+          "default_severity": "CRITICAL",
+          "c_ssrs_mapping": "Active Suicidal Ideation with Some Intent to Act, without Specific Plan"
+        },
+        {
+          "flag_id": "SH-005",
+          "name": "Active suicidal ideation, with intent",
+          "description": "Intent to act on suicidal thoughts.",
+          "default_severity": "CRITICAL",
+          "c_ssrs_mapping": "Active Suicidal Ideation with Specific Plan and Intent"
+        },
+        {
+          "flag_id": "SH-006",
+          "name": "Preparatory behavior",
+          "description": "Actions taken to prepare for suicide.",
+          "default_severity": "CRITICAL",
+          "c_ssrs_mapping": "Preparatory Acts or Behavior"
+        },
+        {
+          "flag_id": "SH-007",
+          "name": "Self-injury without suicidal intent",
+          "description": "Cutting, burning, hitting self, etc.",
+          "default_severity": "HIGH"
+        },
+        {
+          "flag_id": "SH-008",
+          "name": "History of attempt referenced",
+          "description": "Reference to past suicide attempt.",
+          "default_severity": "HIGH",
+          "c_ssrs_mapping": "Actual Attempt (historical)"
+        }
+      ]
+    },
+    {
+      "id": "harm_to_others",
+      "name": "Harm to Others",
+      "flags": [
+        {
+          "flag_id": "HO-001",
+          "name": "Homicidal ideation, nonspecific",
+          "description": "General thoughts of harming others.",
+          "default_severity": "CRITICAL"
+        },
+        {
+          "flag_id": "HO-002",
+          "name": "Homicidal ideation, specific target",
+          "description": "Named or identifiable target.",
+          "default_severity": "CRITICAL"
+        },
+        {
+          "flag_id": "HO-003",
+          "name": "Homicidal ideation, with plan",
+          "description": "Specific plan to harm another person.",
+          "default_severity": "CRITICAL"
+        },
+        {
+          "flag_id": "HO-004",
+          "name": "Violent urges",
+          "description": "Urges to be physically violent.",
+          "default_severity": "HIGH"
+        },
+        {
+          "flag_id": "HO-005",
+          "name": "Abuse disclosure, perpetrating",
+          "description": "Admission of perpetrating abuse.",
+          "default_severity": "HIGH"
+        },
+        {
+          "flag_id": "HO-006",
+          "name": "Abuse disclosure, experiencing",
+          "description": "Disclosure of being abused.",
+          "default_severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "id": "medication",
+      "name": "Medication Non-Adherence",
+      "flags": [
+        {
+          "flag_id": "MED-001",
+          "name": "Non-adherence, stated",
+          "description": "Explicit statement of not taking medication.",
+          "default_severity": "MEDIUM"
+        },
+        {
+          "flag_id": "MED-002",
+          "name": "Non-adherence, implied",
+          "description": "Implied non-adherence (ran out, can't afford, don't like, stopped).",
+          "default_severity": "MEDIUM"
+        },
+        {
+          "flag_id": "MED-003",
+          "name": "Medication misuse",
+          "description": "Taking more than prescribed, stockpiling.",
+          "default_severity": "HIGH"
+        },
+        {
+          "flag_id": "MED-004",
+          "name": "Adverse reaction reported",
+          "description": "Reporting side effects or bad reactions.",
+          "default_severity": "MEDIUM"
+        },
+        {
+          "flag_id": "MED-005",
+          "name": "Desire to discontinue",
+          "description": "Wanting to stop medication.",
+          "default_severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "id": "substance_use",
+      "name": "Substance Use",
+      "flags": [
+        {
+          "flag_id": "SU-001",
+          "name": "Active substance use disclosed",
+          "description": "Current use of substances.",
+          "default_severity": "MEDIUM"
+        },
+        {
+          "flag_id": "SU-002",
+          "name": "Relapse indicator",
+          "description": "Return to use after period of sobriety.",
+          "default_severity": "HIGH"
+        },
+        {
+          "flag_id": "SU-003",
+          "name": "Substance use escalation",
+          "description": "Increase in frequency or amount.",
+          "default_severity": "HIGH"
+        },
+        {
+          "flag_id": "SU-004",
+          "name": "Withdrawal symptoms",
+          "description": "Reporting withdrawal effects.",
+          "default_severity": "HIGH"
+        },
+        {
+          "flag_id": "SU-005",
+          "name": "Risky substance behavior",
+          "description": "Mixing substances, using alone, IV use.",
+          "default_severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "id": "clinical_deterioration",
+      "name": "Clinical Deterioration",
+      "flags": [
+        {
+          "flag_id": "CD-001",
+          "name": "Hopelessness",
+          "description": "Pervasive hopelessness, nothing will get better.",
+          "default_severity": "HIGH"
+        },
+        {
+          "flag_id": "CD-002",
+          "name": "Severe isolation",
+          "description": "Withdrawal from all social contact.",
+          "default_severity": "MEDIUM"
+        },
+        {
+          "flag_id": "CD-003",
+          "name": "Sleep disruption, severe",
+          "description": "Not sleeping for days, or sleeping 16+ hours.",
+          "default_severity": "MEDIUM"
+        },
+        {
+          "flag_id": "CD-004",
+          "name": "Appetite disruption, severe",
+          "description": "Not eating for days, or binge/purge.",
+          "default_severity": "MEDIUM"
+        },
+        {
+          "flag_id": "CD-005",
+          "name": "Psychotic symptoms",
+          "description": "Hallucinations, delusions, paranoia.",
+          "default_severity": "HIGH"
+        },
+        {
+          "flag_id": "CD-006",
+          "name": "Dissociation",
+          "description": "Feeling detached from reality, depersonalization.",
+          "default_severity": "MEDIUM"
+        },
+        {
+          "flag_id": "CD-007",
+          "name": "Panic/acute anxiety",
+          "description": "Severe panic, inability to function.",
+          "default_severity": "MEDIUM"
+        },
+        {
+          "flag_id": "CD-008",
+          "name": "Mania indicators",
+          "description": "Grandiosity, decreased need for sleep, racing thoughts, risky behavior.",
+          "default_severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "id": "protective_factors",
+      "name": "Protective Factors",
+      "flags": [
+        {
+          "flag_id": "PF-001",
+          "name": "Treatment engagement",
+          "description": "Expressing commitment to treatment.",
+          "default_severity": "POSITIVE"
+        },
+        {
+          "flag_id": "PF-002",
+          "name": "Social support",
+          "description": "Mentioning supportive relationships.",
+          "default_severity": "POSITIVE"
+        },
+        {
+          "flag_id": "PF-003",
+          "name": "Future orientation",
+          "description": "Making plans for the future, setting goals.",
+          "default_severity": "POSITIVE"
+        },
+        {
+          "flag_id": "PF-004",
+          "name": "Coping skills usage",
+          "description": "Actively using taught coping strategies.",
+          "default_severity": "POSITIVE"
+        },
+        {
+          "flag_id": "PF-005",
+          "name": "Medication adherence",
+          "description": "Consistently taking medication as prescribed.",
+          "default_severity": "POSITIVE"
+        }
+      ]
+    }
+  ]
+}

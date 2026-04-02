@@ -1,0 +1,18 @@
+{
+  "lexicon_version": "1.0.0",
+  "source": "NRC Emotion Lexicon (EmoLex)",
+  "license_note": "The NRC Emotion Lexicon is released under a research-use license. See https://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm for terms.",
+  "categories": [
+    "anger",
+    "anticipation",
+    "disgust",
+    "fear",
+    "joy",
+    "sadness",
+    "surprise",
+    "trust",
+    "positive",
+    "negative"
+  ],
+  "words": {}
+}

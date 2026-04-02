@@ -1,0 +1,95 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "bh-sentinel-ml"
+version = "0.1.0"
+description = "Transformer-based clinical safety signal detection for behavioral health systems"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.11"
+authors = [
+    { name = "BH Healthcare", email = "oss@bh-healthcare.github.io" }
+]
+keywords = [
+    "nlp",
+    "clinical",
+    "safety",
+    "behavioral-health",
+    "healthcare",
+    "transformer",
+    "onnx",
+    "zero-shot",
+]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Healthcare Industry",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Text Processing :: Linguistic",
+    "Typing :: Typed",
+]
+dependencies = [
+    "bh-sentinel-core>=0.1.0,<1",
+    "onnxruntime>=1.16.0,<2",
+    "tokenizers>=0.15.0,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0,<9",
+    "ruff>=0.1.0,<1",
+    "mypy>=1.0.0,<2",
+]
+
+[project.urls]
+Homepage = "https://github.com/bh-healthcare/bh-sentinel"
+Documentation = "https://github.com/bh-healthcare/bh-sentinel#readme"
+Repository = "https://github.com/bh-healthcare/bh-sentinel"
+Issues = "https://github.com/bh-healthcare/bh-sentinel/issues"
+Changelog = "https://github.com/bh-healthcare/bh-sentinel/blob/main/CHANGELOG.md"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/bh_sentinel"]
+only-include = ["src/bh_sentinel/ml"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/README.md",
+]
+
+[tool.hatch.build]
+artifacts = [
+    "py.typed",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "W",
+    "F",
+    "I",
+    "B",
+    "UP",
+]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_ignores = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
