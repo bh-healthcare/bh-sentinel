@@ -1,0 +1,48 @@
+{
+  "rules_version": "1.0.0",
+  "escalation_rules": [
+    {
+      "id": "ESC-001",
+      "description": "Passive SI combined with strong hopelessness escalates to CRITICAL",
+      "condition": {
+        "all_of": [
+          {"flag_present": "SH-001", "min_confidence": 0.7},
+          {"flag_present": "CD-001", "min_confidence": 0.7}
+        ]
+      },
+      "action": {
+        "escalate_flag": "SH-001",
+        "new_severity": "CRITICAL",
+        "recommended_action": "Administer C-SSRS"
+      }
+    }
+  ],
+  "de_escalation_rules": [
+    {
+      "id": "DE-001",
+      "description": "Historical references reduce severity by one level",
+      "condition": {
+        "temporal_context": "past"
+      },
+      "action": {
+        "reduce_severity_by": 1
+      }
+    }
+  ],
+  "compound_rules": [
+    {
+      "id": "COMP-001",
+      "description": "Co-occurring substance use and self-harm flags require immediate review",
+      "condition": {
+        "all_of": [
+          {"domain_present": "substance_use"},
+          {"domain_present": "self_harm"}
+        ]
+      },
+      "action": {
+        "set_requires_immediate_review": true,
+        "recommended_action": "Assess for co-occurring substance use and suicidal risk"
+      }
+    }
+  ]
+}

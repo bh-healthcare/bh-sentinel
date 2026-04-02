@@ -1,0 +1,107 @@
+# bh-sentinel Pattern Library
+#
+# Each domain contains flags, each flag contains patterns, negation phrases,
+# optional clinical shorthand, and a default confidence score. Patterns are
+# compiled to regex at load time (case-insensitive). The pattern matcher
+# applies negation and temporal detection after matching.
+#
+# Convention: All negation_phrases entries are treated as regex patterns and
+# compiled with re.IGNORECASE. Plain strings like "denies" work because they
+# are valid regex. Use regex syntax (e.g. "(?:\-|negative) (?:for )?SI")
+# when matching needs to be more specific than a literal substring.
+#
+# Full library (~150-200 patterns) will be populated during implementation.
+
+self_harm:
+  SH-001:  # Passive death wish
+    patterns:
+      - "wish(?:es|ed)? (?:I |he |she |they )?(?:was|were|would be) dead"
+      - "better off dead"
+      - "don'?t want to (?:be alive|live|wake up)"
+      - "wish I (?:could|would) (?:just )?die"
+      - "wish I (?:could|would) (?:go to )?sleep and (?:never|not) wake up"
+      - "everyone would be better off without me"
+      - "no reason to (?:live|go on|keep going)"
+      - "what'?s the point (?:anymore|of (?:living|going on|any of this))"
+      - "can'?t (?:do this|take it|go on) anymore"
+      - "just want (?:it|everything) to (?:stop|end|be over)"
+    negation_phrases: ["don't", "no longer", "used to", "not anymore", "denies"]
+    confidence: 0.92
+
+  SH-002:  # Active SI - nonspecific
+    patterns:
+      - "want(?:s|ed|ing)? to (?:kill|end) (?:myself|my life|it all)"
+      - "thinking (?:about|of) (?:killing|ending) (?:myself|my life)"
+      - "suicidal (?:thoughts?|ideation|feelings)"
+      - "can'?t (?:stop|keep from) thinking about (?:suicide|dying|ending it)"
+    clinical_shorthand:
+      - "pt (?:c/o|reports|endorses) SI"
+      - "(?:\\+|positive) (?:for )?SI"
+      - "SI (?:present|endorsed|reported|active)"
+    negation_phrases: ["denies", "no", "not", "never", "(?:\\-|negative) (?:for )?SI"]
+    confidence: 0.95
+
+  SH-003:  # Active SI - with method
+    patterns:
+      - "(?:kill|end|hang|shoot|cut|stab|drown|poison|overdose|jump)(?:ing)? (?:myself|my life)"
+      - "thinking (?:about|of) (?:taking|using) (?:pills|a gun|a knife|a rope)"
+      - "know(?:s)? how (?:I would|I'd|to) (?:do it|end it|kill myself)"
+      - "have (?:a )?(?:plan|method|way) to (?:kill myself|end (?:it|my life))"
+    clinical_shorthand:
+      - "SI (?:with|w/) method"
+      - "pt (?:reports|endorses|describes) method"
+    negation_phrases: ["denies", "no", "not", "never", "(?:\\-|negative) (?:for )?SI"]
+    confidence: 0.96
+
+harm_to_others:
+  HO-001:  # Homicidal ideation - nonspecific
+    patterns:
+      - "want(?:s|ed|ing)? to (?:hurt|harm|kill) (?:someone|people|them|him|her)"
+      - "thinking (?:about|of) (?:hurting|harming|killing)"
+      - "going to (?:hurt|harm|kill)"
+      - "fantasiz(?:e|es|ing) about (?:violence|hurting|killing)"
+    clinical_shorthand:
+      - "pt (?:c/o|reports|endorses) HI"
+      - "(?:\\+|positive) (?:for )?HI"
+      - "HI (?:present|endorsed|reported|active)"
+    negation_phrases: ["don't", "no", "not", "never", "denies", "(?:\\-|negative) (?:for )?HI"]
+    confidence: 0.93
+
+medication:
+  MED-001:  # Non-adherence - stated
+    patterns:
+      - "stopped taking (?:my |the )?(?:medication|meds|pills|prescription)"
+      - "haven'?t (?:taken|been taking) (?:my |the )?(?:medication|meds)"
+      - "ran out of (?:my |the )?(?:medication|meds|prescription)"
+      - "can'?t afford (?:my |the )?(?:medication|meds|prescription)"
+      - "not taking (?:my |the )?(?:medication|meds) (?:anymore|as prescribed)"
+      - "skipping (?:my |the )?(?:medication|meds|doses)"
+    clinical_shorthand:
+      - "(?:med|medication) non-?adherence"
+      - "non-?compliant (?:with|re:?) (?:meds|medication)"
+    confidence: 0.88
+
+substance_use:
+  SU-001:  # Active substance use disclosed
+    patterns:
+      - "(?:using|used|smoking|drinking) (?:again|daily|every day)"
+      - "relapsed"
+      - "started (?:using|drinking|smoking) again"
+    confidence: 0.85
+
+clinical_deterioration:
+  CD-001:  # Hopelessness
+    patterns:
+      - "(?:no|lost|losing) (?:hope|point|purpose|reason)"
+      - "(?:nothing|things) (?:will|would|can) (?:never )?(?:get better|change|improve)"
+      - "what'?s the (?:use|point)"
+      - "give(?:n|ing) up"
+    confidence: 0.85
+
+protective_factors:
+  PF-001:  # Treatment engagement
+    patterns:
+      - "(?:looking forward to|engaged in|committed to) (?:therapy|treatment|sessions?)"
+      - "(?:finding|found) (?:therapy|treatment|counseling) helpful"
+      - "want(?:s|ing)? to (?:continue|keep going with) (?:therapy|treatment)"
+    confidence: 0.80

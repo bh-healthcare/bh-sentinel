@@ -1,0 +1,66 @@
+name: Publish to PyPI
+
+# This workflow is a placeholder. It will be wired up when the packages
+# are ready for their first release.
+#
+# Intended flow:
+#   1. Tag a release (e.g., v0.1.0)
+#   2. This workflow builds both packages
+#   3. Publishes to PyPI using trusted publishing (OIDC)
+#
+# Each package is published independently:
+#   - bh-sentinel-core is published first
+#   - bh-sentinel-ml is published after (depends on core being available)
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  publish-core:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build
+        run: pip install build
+
+      - name: Build bh-sentinel-core
+        run: python -m build packages/bh-sentinel-core/
+
+      # - name: Publish to PyPI
+      #   uses: pypa/gh-action-pypi-publish@release/v1
+      #   with:
+      #     packages-dir: packages/bh-sentinel-core/dist/
+
+  publish-ml:
+    runs-on: ubuntu-latest
+    needs: publish-core
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build
+        run: pip install build
+
+      - name: Build bh-sentinel-ml
+        run: python -m build packages/bh-sentinel-ml/
+
+      # - name: Publish to PyPI
+      #   uses: pypa/gh-action-pypi-publish@release/v1
+      #   with:
+      #     packages-dir: packages/bh-sentinel-ml/dist/
