@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Split CD-005 "Psychotic symptoms" into four granular sub-flags in the
+  `clinical_deterioration` domain (40 total flags, up from 37):
+  - CD-005a: Auditory hallucinations
+  - CD-005b: Visual hallucinations
+  - CD-005c: Paranoid ideation
+  - CD-005d: Delusional thinking
+
+### Added
+
+- Pattern library entries for CD-005a through CD-005d with clinical shorthand
+  and negation phrases
+- ESC-002 escalation rule: psychosis flag + acute anxiety (CD-007) co-occurrence
+  escalates psychosis flags to CRITICAL
+- COMP-002 compound rule: anxiety-to-psychosis escalation pattern triggers
+  immediate review for possible psychotic decompensation
+- Documentation for psychosis flag detail and anxiety-to-psychosis escalation
+  in `docs/flag-taxonomy.md`
+
 ## [0.1.0] - 2026-04-01
 
 ### Added

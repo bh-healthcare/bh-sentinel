@@ -397,7 +397,7 @@ If you use bh-sentinel in research or clinical implementations, please cite:
 ```bibtex
 @software{bh_sentinel,
   title = {bh-sentinel: Open-Source Clinical Safety Signal Detection for Behavioral Health Systems},
-  author = {Kumar, Tanmaya},
+  author = {Kumar, Tanmaya (https://tanmayakumar.com)},
   year = {2026},
   url = {https://github.com/bh-healthcare/bh-sentinel},
   license = {Apache-2.0}
