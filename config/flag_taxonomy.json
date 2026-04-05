@@ -205,9 +205,27 @@
           "default_severity": "MEDIUM"
         },
         {
-          "flag_id": "CD-005",
-          "name": "Psychotic symptoms",
-          "description": "Hallucinations, delusions, paranoia.",
+          "flag_id": "CD-005a",
+          "name": "Auditory hallucinations",
+          "description": "Hearing voices, auditory command hallucinations, running commentary.",
+          "default_severity": "HIGH"
+        },
+        {
+          "flag_id": "CD-005b",
+          "name": "Visual hallucinations",
+          "description": "Seeing things others cannot see, visual distortions perceived as real.",
+          "default_severity": "HIGH"
+        },
+        {
+          "flag_id": "CD-005c",
+          "name": "Paranoid ideation",
+          "description": "Belief of being watched, followed, plotted against, or targeted without evidence.",
+          "default_severity": "HIGH"
+        },
+        {
+          "flag_id": "CD-005d",
+          "name": "Delusional thinking",
+          "description": "Fixed false beliefs (grandiose, somatic, referential, persecutory) resistant to counter-evidence.",
           "default_severity": "HIGH"
         },
         {

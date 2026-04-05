@@ -98,6 +98,69 @@ clinical_deterioration:
       - "give(?:n|ing) up"
     confidence: 0.85
 
+  CD-005a:  # Auditory hallucinations
+    patterns:
+      - "hear(?:ing)? voices?"
+      - "voices? (?:are |is )?(?:telling|commanding|saying|talking to)"
+      - "(?:the |a )?voice(?:s)? (?:in|inside) (?:my|his|her|their) head"
+      - "(?:someone|people) (?:is|are) (?:talking|whispering|yelling) (?:at|to) me"
+      - "can hear (?:someone|people|them) (?:when|but) (?:no one|nobody) (?:is|else is) (?:there|around)"
+      - "voices? (?:tell|told|telling) (?:me|him|her|them) to"
+    clinical_shorthand:
+      - "(?:AH|AVH) (?:present|endorsed|reported|active)"
+      - "pt (?:c/o|reports|endorses) (?:AH|AVH|auditory hallucinations)"
+      - "(?:\\+|positive) (?:for )?(?:AH|AVH)"
+      - "command (?:auditory )?hallucinations?"
+    negation_phrases: ["denies", "no", "not", "never", "(?:\\-|negative) (?:for )?(?:AH|AVH)"]
+    confidence: 0.90
+
+  CD-005b:  # Visual hallucinations
+    patterns:
+      - "see(?:ing|s)? (?:things?|people|shadows?|figures?) (?:that (?:aren'?t|are not|weren'?t) (?:there|real))"
+      - "(?:shadows?|figures?|people) (?:that (?:no one|nobody) else can see)"
+      - "see(?:ing|s)? (?:things?|stuff) (?:others? )?(?:can'?t|don'?t|do not) see"
+      - "visions? (?:of|that)"
+      - "(?:things?|people|shadows?) (?:appear(?:ing)?|disappear(?:ing)?) (?:in|from) (?:the corner of|my)"
+    clinical_shorthand:
+      - "(?:VH) (?:present|endorsed|reported|active)"
+      - "pt (?:c/o|reports|endorses) (?:VH|visual hallucinations)"
+      - "(?:\\+|positive) (?:for )?VH"
+    negation_phrases: ["denies", "no", "not", "never", "(?:\\-|negative) (?:for )?VH"]
+    confidence: 0.88
+
+  CD-005c:  # Paranoid ideation
+    patterns:
+      - "(?:people|someone|they|them|everybody|everyone) (?:is|are) (?:watching|following|spying on|tracking|plotting against|out to get) (?:me|him|her|them)"
+      - "being (?:watched|followed|monitored|surveilled|tracked|spied on)"
+      - "can'?t trust (?:anyone|anybody|them|people)"
+      - "(?:they|people|someone|the government) (?:is|are) (?:trying|going) to (?:get|hurt|harm|kill|poison) (?:me|him|her|them)"
+      - "feel(?:s|ing)? (?:unsafe|threatened) (?:everywhere|all the time|constantly)"
+      - "(?:people|neighbors|coworkers?|family) (?:are |is )?(?:conspiring|plotting|scheming) against"
+    clinical_shorthand:
+      - "paranoid ideation (?:present|endorsed|reported|active)"
+      - "pt (?:c/o|reports|endorses) paranoi(?:a|d ideation)"
+      - "(?:\\+|positive) (?:for )?paranoi(?:a|d ideation)"
+    negation_phrases: ["denies", "no", "not", "never", "used to"]
+    confidence: 0.87
+
+  CD-005d:  # Delusional thinking
+    patterns:
+      - "(?:I am|I'm|he is|she is|they are) (?:god|jesus|chosen|special|the messiah|a prophet|royalty)"
+      - "(?:have|has) (?:special|supernatural|magical|divine) (?:powers?|abilities|mission|purpose)"
+      - "(?:the (?:tv|television|radio|news|internet)|people on tv) (?:is|are) (?:talking|sending messages?|communicating) (?:to|about|directly to) (?:me|him|her|them)"
+      - "(?:something|device|chip) (?:is )?(?:implanted|inserted|put) (?:in|inside) (?:my|his|her|their) (?:body|head|brain|arm)"
+      - "(?:thoughts?|ideas?) (?:are )?(?:being )?(?:put|inserted|planted|broadcast) (?:into|in|from) (?:my|his|her|their) (?:head|mind|brain)"
+      - "(?:my|his|her|their) (?:organs?|body|insides) (?:is|are) (?:rotting|decaying|missing|being removed|not working)"
+      - "(?:convinced|believes?|certain|knows?) (?:that )?(?:despite|even though|regardless)"
+    clinical_shorthand:
+      - "delusion(?:s|al thinking)? (?:present|endorsed|reported|active)"
+      - "pt (?:c/o|reports|endorses) delusion(?:s|al (?:thinking|ideation))"
+      - "(?:grandiose|somatic|persecutory|referential|erotomanic) delusion(?:s)?"
+      - "(?:\\+|positive) (?:for )?delusion(?:s|al thinking)"
+      - "thought (?:insertion|broadcasting|withdrawal)"
+    negation_phrases: ["denies", "no", "not", "never", "used to", "insight into"]
+    confidence: 0.86
+
 protective_factors:
   PF-001:  # Treatment engagement
     patterns:

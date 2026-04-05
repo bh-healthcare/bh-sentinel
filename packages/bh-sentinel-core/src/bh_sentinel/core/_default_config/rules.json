@@ -15,6 +15,21 @@
         "new_severity": "CRITICAL",
         "recommended_action": "Administer C-SSRS"
       }
+    },
+    {
+      "id": "ESC-002",
+      "description": "Any psychosis flag co-occurring with acute anxiety escalates the psychosis flag to CRITICAL",
+      "condition": {
+        "all_of": [
+          {"any_flag_present": ["CD-005a", "CD-005b", "CD-005c", "CD-005d"], "min_confidence": 0.7},
+          {"flag_present": "CD-007", "min_confidence": 0.7}
+        ]
+      },
+      "action": {
+        "escalate_flags": ["CD-005a", "CD-005b", "CD-005c", "CD-005d"],
+        "new_severity": "CRITICAL",
+        "recommended_action": "Assess for psychotic decompensation; anxiety may be prodromal or reactive to psychotic experiences"
+      }
     }
   ],
   "de_escalation_rules": [
@@ -42,6 +57,21 @@
       "action": {
         "set_requires_immediate_review": true,
         "recommended_action": "Assess for co-occurring substance use and suicidal risk"
+      }
+    },
+    {
+      "id": "COMP-002",
+      "description": "Anxiety-to-psychosis escalation: co-occurring anxiety and psychosis flags indicate possible decompensation requiring immediate review",
+      "condition": {
+        "all_of": [
+          {"flag_present": "CD-007"},
+          {"any_flag_present": ["CD-005a", "CD-005b", "CD-005c", "CD-005d"]}
+        ]
+      },
+      "action": {
+        "set_requires_immediate_review": true,
+        "escalate_severity": "CRITICAL",
+        "recommended_action": "Evaluate for psychotic decompensation with anxiety prodrome; consider acute psychiatric assessment"
       }
     }
   ]

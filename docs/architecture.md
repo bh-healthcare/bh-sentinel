@@ -138,7 +138,10 @@ The flag taxonomy is informed by the Columbia Suicide Severity Rating Scale (C-S
 | CD-002 | Severe isolation | MEDIUM | Withdrawal from all social contact |
 | CD-003 | Sleep disruption, severe | MEDIUM | Not sleeping for days, or sleeping 16+ hours |
 | CD-004 | Appetite disruption, severe | MEDIUM | Not eating for days, or binge/purge |
-| CD-005 | Psychotic symptoms | HIGH | Hallucinations, delusions, paranoia |
+| CD-005a | Auditory hallucinations | HIGH | Hearing voices, auditory command hallucinations, running commentary |
+| CD-005b | Visual hallucinations | HIGH | Seeing things others cannot see, visual distortions perceived as real |
+| CD-005c | Paranoid ideation | HIGH | Belief of being watched, followed, plotted against, or targeted without evidence |
+| CD-005d | Delusional thinking | HIGH | Fixed false beliefs (grandiose, somatic, referential, persecutory) resistant to counter-evidence |
 | CD-006 | Dissociation | MEDIUM | Feeling detached from reality, depersonalization |
 | CD-007 | Panic/acute anxiety | MEDIUM | Severe panic, inability to function |
 | CD-008 | Mania indicators | HIGH | Grandiosity, decreased need for sleep, racing thoughts, risky behavior |
