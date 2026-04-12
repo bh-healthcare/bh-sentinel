@@ -201,6 +201,12 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 
+# Local AI planning / superpowers (not versioned)
+docs/superpowers/
+
+# macOS
+.DS_Store
+
 # Marimo
 marimo/_static/
 marimo/_lsp/

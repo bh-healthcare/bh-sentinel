@@ -1,12 +1,40 @@
-"""Pydantic models for analysis response, including evidence spans and basis descriptions."""
+"""Pydantic models for analysis response, error response, and evidence spans."""
 
 from __future__ import annotations
 
+from enum import StrEnum
 from datetime import datetime
 
 from pydantic import BaseModel
 
 from bh_sentinel.core.models.flags import Domain, Flag, LayerStatus, Severity
+
+
+class ErrorCode(StrEnum):
+    """Standardized error codes for API error responses."""
+
+    VALIDATION_TEXT_TOO_SHORT = "VALIDATION_TEXT_TOO_SHORT"
+    VALIDATION_TEXT_TOO_LONG = "VALIDATION_TEXT_TOO_LONG"
+    VALIDATION_TEXT_EMPTY = "VALIDATION_TEXT_EMPTY"
+    VALIDATION_LANGUAGE_UNSUPPORTED = "VALIDATION_LANGUAGE_UNSUPPORTED"
+    VALIDATION_DOMAIN_UNKNOWN = "VALIDATION_DOMAIN_UNKNOWN"
+    VALIDATION_SEVERITY_UNKNOWN = "VALIDATION_SEVERITY_UNKNOWN"
+    INTERNAL_PIPELINE_ERROR = "INTERNAL_PIPELINE_ERROR"
+    SERVICE_UNAVAILABLE = "SERVICE_UNAVAILABLE"
+
+
+class ErrorResponse(BaseModel):
+    """PHI-safe error response. No field can contain request body content.
+
+    The message field is always a static template with at most a request_id
+    interpolated. Exception handlers must never propagate raw tracebacks or
+    input-derived content through this model.
+    """
+
+    request_id: str
+    error_code: ErrorCode
+    message: str
+    http_status: int
 
 
 class EmotionResult(BaseModel):
