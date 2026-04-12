@@ -1,0 +1,453 @@
+# bh-sentinel Pattern Test Fixtures
+#
+# test_fixtures_version: "1.0.0"
+# requires_taxonomy_version: "1.0.x"
+#
+# Each entry defines a clinical text fragment and the expected detection
+# outcome. The test runner (`make test-patterns`) compiles patterns from
+# patterns.yaml, runs each fixture through the pattern matcher with
+# negation and temporal detection, and compares results to expectations.
+#
+# Fixtures are organized by test category. Within each category, every
+# entry has:
+#   - input: the clinical text fragment (short, realistic, no real PHI)
+#   - expect_flags: list of flag_ids that should be detected
+#   - expect_suppressed: list of flag_ids that match a pattern but should
+#     be suppressed by negation or temporal detection (optional)
+#   - expect_none: true if no flags should fire (optional)
+#   - note: brief explanation for clinical reviewers (optional)
+#
+# Clinical teams: add fixtures here when authoring new patterns. The test
+# runner will tell you if your patterns match what you expect and whether
+# negation/temporal detection behaves correctly.
+
+_meta:
+  test_fixtures_version: "1.0.0"
+  requires_taxonomy_version: "1.0.x"
+
+# =============================================================================
+# DIRECT POSITIVE MATCHES
+# =============================================================================
+
+direct_positives:
+  - input: "Patient reports suicidal ideation for the past two days."
+    expect_flags: ["SH-002"]
+    note: "Straightforward active SI disclosure."
+
+  - input: "She wants to kill herself."
+    expect_flags: ["SH-002"]
+    note: "Direct active SI statement."
+
+  - input: "I don't want to be alive anymore."
+    expect_flags: ["SH-001"]
+    note: "Passive death wish — 'don't want to be alive' is an affirmative SH-001 pattern."
+
+  - input: "Patient states she is going to take all her pills tonight when her roommate leaves."
+    expect_flags: ["SH-005"]
+    note: "Plan (take pills, tonight, when roommate leaves) and intent (going to)."
+
+  - input: "He has been giving away his belongings and wrote a goodbye letter."
+    expect_flags: ["SH-006"]
+    note: "Preparatory behavior — giving away belongings + goodbye letter."
+
+  - input: "Reports cutting her arms daily for the past week."
+    expect_flags: ["SH-007"]
+    note: "Active NSSI. Temporal marker 'past week' is recent/present."
+
+  - input: "Patient reports wanting to hurt his neighbor."
+    expect_flags: ["HO-002"]
+    note: "HI with specific target (neighbor)."
+
+  - input: "She stopped taking her Lexapro two weeks ago."
+    expect_flags: ["MED-001"]
+    note: "Stated medication non-adherence."
+
+  - input: "Drinking daily, about a fifth of vodka."
+    expect_flags: ["SU-001"]
+    note: "Active substance use disclosure."
+
+  - input: "Started using again after two years sober."
+    expect_flags: ["SU-002"]
+    note: "Relapse indicator — 'again' and 'sober' context."
+
+  - input: "Patient hasn't slept in three days."
+    expect_flags: ["CD-003"]
+    note: "Severe sleep disruption."
+
+  - input: "Hearing voices telling him to hurt himself."
+    expect_flags: ["CD-005a"]
+    note: "Auditory hallucinations with command content."
+
+  - input: "Believes the government implanted a chip in his brain."
+    expect_flags: ["CD-005d"]
+    note: "Delusional thinking — somatic/persecutory."
+
+  - input: "Feeling detached from her body, like she's watching herself from outside."
+    expect_flags: ["CD-006"]
+    note: "Depersonalization/dissociation."
+
+  - input: "Racing thoughts, hasn't slept in two days, feels invincible."
+    expect_flags: ["CD-008"]
+    note: "Mania indicators — racing thoughts + decreased sleep + grandiosity."
+
+  - input: "Finding therapy really helpful, looking forward to next session."
+    expect_flags: ["PF-001"]
+    note: "Treatment engagement protective factor."
+
+  - input: "Her family is very supportive and checks in daily."
+    expect_flags: ["PF-002"]
+    note: "Social support protective factor."
+
+# =============================================================================
+# CLINICAL SHORTHAND
+# =============================================================================
+
+clinical_shorthand:
+  - input: "+SI, pt endorses active thoughts."
+    expect_flags: ["SH-002"]
+    note: "Clinical shorthand: +SI."
+
+  - input: "Pt c/o SI with method."
+    expect_flags: ["SH-003"]
+    note: "Clinical shorthand: SI with method."
+
+  - input: "+HI with specific target identified."
+    expect_flags: ["HO-002"]
+    note: "Clinical shorthand: +HI with target."
+
+  - input: "AH present, command hallucinations endorsed."
+    expect_flags: ["CD-005a"]
+    note: "Clinical shorthand: AH present."
+
+  - input: "Medication non-adherence noted."
+    expect_flags: ["MED-001"]
+    note: "Clinical shorthand: med non-adherence."
+
+  - input: "SI with plan and intent."
+    expect_flags: ["SH-005"]
+    note: "Clinical shorthand: plan and intent."
+
+# =============================================================================
+# NEGATION — SHOULD SUPPRESS
+# =============================================================================
+
+negation_suppressed:
+  - input: "Patient denies suicidal ideation."
+    expect_suppressed: ["SH-002"]
+    expect_none: true
+    note: "'Denies' negates SI within clause scope."
+
+  - input: "No SI."
+    expect_suppressed: ["SH-002"]
+    expect_none: true
+    note: "'No' negates SI directly."
+
+  - input: "-SI, -HI."
+    expect_suppressed: ["SH-002", "HO-001"]
+    expect_none: true
+    note: "Shorthand negation for both."
+
+  - input: "Negative for SI."
+    expect_suppressed: ["SH-002"]
+    expect_none: true
+    note: "Clinical shorthand negation."
+
+  - input: "Suicidal ideation: denied."
+    expect_suppressed: ["SH-002"]
+    expect_none: true
+    note: "Post-negation cue."
+
+# =============================================================================
+# NEGATION — SCOPE TERMINATION (partial suppression)
+# =============================================================================
+
+negation_scope:
+  - input: "Denies SI, but reports feeling hopeless and that there's no point in going on."
+    expect_suppressed: ["SH-002"]
+    expect_flags: ["CD-001", "SH-001"]
+    note: "Comma+but terminates negation scope. 'No point in going on' is an affirmative SH-001 pattern. 'Hopeless' triggers CD-001."
+
+  - input: "Denies SI, +HI."
+    expect_suppressed: ["SH-002"]
+    expect_flags: ["HO-001"]
+    note: "Comma terminates negation. +HI is affirmed."
+
+  - input: "-SI, +HI, reports hearing voices."
+    expect_suppressed: ["SH-002"]
+    expect_flags: ["HO-001", "CD-005a"]
+    note: "Comma terminates scope after each item."
+
+  - input: "No suicidal ideation. Reports wanting to hurt others."
+    expect_suppressed: ["SH-002"]
+    expect_flags: ["HO-001"]
+    note: "Period terminates scope."
+
+  - input: "Denies SI/HI."
+    expect_suppressed: ["SH-002", "HO-001"]
+    expect_none: true
+    note: "Slash is not a scope terminator — negation carries through conjunctive list."
+
+# =============================================================================
+# PSEUDO-NEGATION (should NOT suppress)
+# =============================================================================
+
+pseudo_negation:
+  - input: "Patient no longer denies suicidal ideation."
+    expect_flags: ["SH-002"]
+    note: "'No longer denies' is double negation = affirmation."
+
+  - input: "Unable to sleep for three days."
+    expect_flags: ["CD-003"]
+    note: "'Unable to' negates ability, not the symptom."
+
+  - input: "Cannot stop thinking about suicide."
+    expect_flags: ["SH-002"]
+    note: "'Cannot stop' means the thinking IS happening."
+
+# =============================================================================
+# TEMPORAL — HISTORICAL (should classify as 'past')
+# =============================================================================
+
+temporal_past:
+  - input: "History of suicide attempt in 2019."
+    expect_flags: ["SH-008"]
+    expect_temporal: "past"
+    note: "'History of' and 'in 2019' are past markers."
+
+  - input: "Used to cut himself in high school."
+    expect_flags: ["SH-007"]
+    expect_temporal: "past"
+    note: "'Used to' and 'in high school' are past markers."
+
+  - input: "Remote history of substance abuse."
+    expect_flags: ["SU-001"]
+    expect_temporal: "past"
+    note: "'Remote history' is a past marker."
+
+# =============================================================================
+# TEMPORAL — PRESENT OVERRIDES PAST
+# =============================================================================
+
+temporal_present_overrides:
+  - input: "I used to cut myself in high school. Last night I started again."
+    expect_flags: ["SH-007"]
+    expect_temporal: "present"
+    note: "Two matches: first is past, second is present. Present wins for the flag."
+
+  - input: "History of SI, currently endorsing active thoughts."
+    expect_flags: ["SH-008", "SH-002"]
+    note: "Two different flags: SH-008 (past), SH-002 (present). No conflict."
+
+  - input: "Had been hearing voices years ago. They came back recently."
+    expect_flags: ["CD-005a"]
+    expect_temporal: "present"
+    note: "'Recently' and 'came back' override 'years ago'."
+
+# =============================================================================
+# MULTI-FLAG / COMPOUND SCENARIOS
+# =============================================================================
+
+multi_flag:
+  - input: "Patient reports not sleeping for 3 days and states she stopped taking her Lexapro two weeks ago. Expresses commitment to continuing group therapy."
+    expect_flags: ["CD-003", "MED-001", "PF-001"]
+    note: "Three flags from three domains in one note."
+
+  - input: "Reports suicidal ideation with plan. Also hearing command voices telling him to hurt himself. Drinking heavily."
+    expect_flags: ["SH-005", "CD-005a", "SU-001"]
+    note: "High-acuity multi-domain presentation."
+
+  - input: "Pt denies SI/HI. Reports medication non-adherence. Sleeping all day. Stopped going to group."
+    expect_suppressed: ["SH-002", "HO-001"]
+    expect_flags: ["MED-001", "CD-003", "CD-002"]
+    note: "Mix of negated and affirmed findings."
+
+# =============================================================================
+# LONGER CLINICAL TEXT (realistic note length)
+# =============================================================================
+
+longer_notes:
+  - input: "43 yo female presents for individual therapy session. Patient reports increased difficulty sleeping over the past week, stating she has not slept more than two hours per night. She endorses feeling hopeless about her situation and questions whether things will ever improve. She has been taking her medications as prescribed and reports finding her current medication regimen helpful. She denies any suicidal or homicidal ideation. She reports attending AA meetings regularly and states her sponsor has been very supportive. No psychotic symptoms endorsed. She expressed commitment to continuing treatment and is looking forward to starting the DBT skills group next week."
+    expect_flags: ["CD-003", "CD-001", "PF-005", "PF-001", "PF-002"]
+    expect_suppressed: ["SH-002", "HO-001"]
+    note: "Realistic intake note. Sleep disruption and hopelessness flagged. SI/HI negated. Medication adherence, treatment engagement, and social support as protective factors."
+
+  - input: "28 yo male seen for crisis evaluation. Patient arrived agitated, pacing in the waiting room. Reports he has been drinking heavily for the past three days after losing his job. States he wants to kill himself but does not have a specific plan. He has a history of one prior suicide attempt by overdose in 2022. Reports hearing voices intermittently over the past two days telling him he is worthless. He is not currently taking any psychiatric medication, states he stopped his Seroquel a month ago because he couldn't afford it. No identified social supports. He lives alone."
+    expect_flags: ["SU-001", "SH-002", "SH-008", "CD-005a", "MED-001", "CD-002"]
+    note: "High-acuity crisis note. Active SI without plan, historical attempt, active AH, active substance use, medication non-adherence, isolation."
+
+# =============================================================================
+# COVERAGE COMPLETENESS — flags not covered by other sections
+# =============================================================================
+
+coverage_completeness:
+  # SH-004: Active SI with some intent, no plan
+  - input: "I'm probably going to do it. I just can't fight it anymore."
+    expect_flags: ["SH-004"]
+    note: "Expressed intent/expectation without a specific plan."
+
+  - input: "I can't promise I won't hurt myself."
+    expect_flags: ["SH-004"]
+    note: "Inability to contract for safety indicates some intent."
+
+  # HO-003: Homicidal ideation with plan
+  - input: "I have a plan to get him. I know when he leaves for work and I bought a knife."
+    expect_flags: ["HO-003"]
+    note: "HI with plan — specific timing and means acquisition."
+
+  # HO-004: Violent urges
+  - input: "I feel like I'm going to snap. Can't control my anger."
+    expect_flags: ["HO-004"]
+    note: "Violent urges — impending loss of control."
+
+  - input: "So angry I could hurt someone."
+    expect_flags: ["HO-004"]
+    note: "Intense anger with urge to harm."
+
+  # HO-005: Abuse disclosure - perpetrating
+  - input: "I hit my wife last night. Lost my temper."
+    expect_flags: ["HO-005"]
+    note: "Perpetration disclosure — hit partner."
+
+  # HO-006: Abuse disclosure - experiencing
+  - input: "My boyfriend hits me when he's drunk."
+    expect_flags: ["HO-006"]
+    note: "Victim disclosure — partner violence."
+
+  - input: "I'm afraid of my husband. He threatens to kill me."
+    expect_flags: ["HO-006"]
+    note: "Fear of partner with death threats."
+
+  # MED-002: Non-adherence implied
+  - input: "I keep forgetting to take my medication."
+    expect_flags: ["MED-002"]
+    note: "Implied non-adherence — forgetting."
+
+  - input: "My insurance won't cover my prescription anymore."
+    expect_flags: ["MED-002"]
+    note: "Implied non-adherence — cost/access barrier."
+
+  # MED-003: Medication misuse
+  - input: "I've been taking double my dose to feel better."
+    expect_flags: ["MED-003"]
+    note: "Taking more than prescribed."
+
+  - input: "I've been saving up my pills."
+    expect_flags: ["MED-003"]
+    note: "Stockpiling medication."
+
+  # MED-004: Adverse reaction
+  - input: "The medication makes me feel like a zombie."
+    expect_flags: ["MED-004"]
+    note: "Reported side effect — cognitive/emotional blunting."
+
+  - input: "I've been having bad side effects from my meds."
+    expect_flags: ["MED-004"]
+    note: "General adverse reaction report."
+
+  # MED-005: Desire to discontinue
+  - input: "I want to stop taking my medication. I don't think it's helping."
+    expect_flags: ["MED-005"]
+    note: "Expressed desire to discontinue."
+
+  - input: "I'm thinking about going off my meds."
+    expect_flags: ["MED-005"]
+    note: "Considering discontinuation."
+
+  # SU-003: Substance use escalation
+  - input: "I've been drinking a lot more than usual. Can't seem to stop."
+    expect_flags: ["SU-003"]
+    note: "Increased use with loss of control."
+
+  # SU-004: Withdrawal symptoms
+  - input: "I'm shaking and sweating. Haven't had a drink in two days."
+    expect_flags: ["SU-004"]
+    note: "Withdrawal symptoms — tremor, diaphoresis."
+
+  - input: "Going through withdrawal. Can't stop shaking."
+    expect_flags: ["SU-004"]
+    note: "Explicit withdrawal statement."
+
+  # SU-005: Risky substance behavior
+  - input: "I've been mixing my pills with alcohol."
+    expect_flags: ["SU-005"]
+    note: "Mixing substances — medication + alcohol."
+
+  - input: "I've been using alone in my apartment every night."
+    expect_flags: ["SU-005"]
+    note: "Using alone — high-risk isolation pattern."
+
+  # CD-004: Appetite disruption
+  - input: "I haven't eaten in three days. Can't keep anything down."
+    expect_flags: ["CD-004"]
+    note: "Severe appetite disruption — not eating for days."
+
+  - input: "I've been bingeing and purging every day this week."
+    expect_flags: ["CD-004"]
+    note: "Binge-purge behavior."
+
+  # CD-005b: Visual hallucinations — already partially covered in clinical shorthand,
+  # adding a patient-language example
+  - input: "I keep seeing shadows that aren't there."
+    expect_flags: ["CD-005b"]
+    note: "Visual hallucinations — seeing things not present."
+
+  # CD-005c: Paranoid ideation
+  - input: "People are following me. They're tracking my phone."
+    expect_flags: ["CD-005c"]
+    note: "Paranoid ideation — surveillance belief."
+
+  - input: "Everyone is conspiring against me at work."
+    expect_flags: ["CD-005c"]
+    note: "Paranoid ideation — persecution belief."
+
+  # CD-007: Panic / acute anxiety
+  - input: "I can't breathe, my heart is racing, I feel like I'm dying."
+    expect_flags: ["CD-007"]
+    note: "Acute panic attack with physiologic symptoms."
+
+  - input: "So anxious I can't function. Can't leave the house."
+    expect_flags: ["CD-007"]
+    note: "Severe anxiety causing functional impairment."
+
+  # PF-003: Future orientation
+  - input: "I'm looking forward to my daughter's graduation next month."
+    expect_flags: ["PF-003"]
+    note: "Future orientation — anticipating positive event."
+
+  - input: "I want to go back to school and finish my degree."
+    expect_flags: ["PF-003"]
+    note: "Future orientation — goal-directed planning."
+
+  # PF-004: Coping skills usage
+  - input: "I used my breathing exercises when I got upset and it helped."
+    expect_flags: ["PF-004"]
+    note: "Active coping skill use — breathing exercises."
+
+  - input: "I called the crisis line when I was feeling overwhelmed."
+    expect_flags: ["PF-004"]
+    note: "Active coping — reached out for support."
+
+# =============================================================================
+# EDGE CASES — SHOULD NOT MATCH
+# =============================================================================
+
+true_negatives:
+  - input: "Patient is doing well today."
+    expect_none: true
+    note: "No clinical concerns."
+
+  - input: "Medication options were discussed with the patient."
+    expect_none: true
+    note: "Discussing medications is not non-adherence."
+
+  - input: "The patient's mother passed away last year."
+    expect_none: true
+    note: "Death of a family member should not trigger SH flags."
+
+  - input: "Patient reports sleeping seven hours per night."
+    expect_none: true
+    note: "Normal sleep should not trigger CD-003."
+
+  - input: "Patient is compliant with medications and attending all appointments."
+    expect_flags: ["PF-005", "PF-001"]
+    note: "Positive flags only — medication adherence and treatment engagement."
