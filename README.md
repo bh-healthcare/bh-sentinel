@@ -190,7 +190,7 @@ bh-sentinel uses a multi-layer pipeline where layers run in parallel for sub-sec
 
 **Layer 2 (Transformer Classification):** ONNX-quantized transformer model running entirely in-process. No network hop, no external API. Catches implied distress and contextual signals that patterns miss. Supports zero-shot classification (no training data needed) and fine-tuned models.
 
-**Layer 3 (Emotion Lexicon):** In-process NRC Emotion Lexicon for word-level emotion scoring. Maps text to emotion categories: sadness, anger, fear, anxiety, hopelessness, guilt, shame, and others. Fast (~2ms), no ML dependency.
+**Layer 3 (Emotion Lexicon):** In-process behavioral health emotion lexicon for word-level emotion scoring. Maps text to 11 clinically relevant categories: hopelessness, agitation, anxiety, anger, sadness, guilt, shame, mania, dissociation, positive valence, and negative valence. Fast (~2ms), no ML dependency.
 
 **Layer 4 (Rules Engine):** Combines signals from Layers 1-3 into final flag determinations. Handles severity escalation (e.g., passive SI + strong hopelessness = CRITICAL), de-escalation (historical references), compound risk detection (co-occurring substance use + self-harm), and recommended actions (e.g., "Administer C-SSRS").
 
@@ -258,7 +258,7 @@ bh-sentinel/
 │   │   │   ├── preprocessor.py        # Text normalization, sentence splitting
 │   │   │   ├── negation_detector.py   # "NOT suicidal" handling
 │   │   │   ├── temporal_detector.py   # Past vs present tense detection
-│   │   │   ├── emotion_lexicon.py     # NRC emotion lexicon (in-process)
+│   │   │   ├── emotion_lexicon.py     # Behavioral health emotion lexicon (in-process)
 │   │   │   ├── pipeline.py            # Orchestrator
 │   │   │   └── models/                # Pydantic request/response models
 │   │   ├── pyproject.toml
@@ -271,10 +271,11 @@ bh-sentinel/
 │       ├── pyproject.toml
 │       └── README.md
 ├── config/
-│   ├── patterns.yaml                  # Default pattern library (~150-200 patterns)
+│   ├── patterns.yaml                  # Default pattern library (~330 patterns across 40 flags)
 │   ├── rules.json                     # Default rules engine configuration
 │   ├── flag_taxonomy.json             # Versioned flag taxonomy
-│   └── emotion_lexicon.json           # NRC Emotion Lexicon data
+│   ├── emotion_lexicon.json           # Behavioral health emotion lexicon data
+│   └── test_fixtures.yaml             # Pattern test fixtures (84 cases across all 40 flags)
 ├── deployment/
 │   ├── aws-lambda/                    # Reference: Lambda container deployment
 │   │   ├── handler.py
@@ -357,11 +358,11 @@ bh-sentinel can emit audit events through bh-audit-logger for compliance trackin
 
 ### Current (v0.1)
 - [ ] Core pattern matching engine with negation and temporal detection
-- [ ] Flag taxonomy v1.0 (37 flags across 6 domains)
+- [ ] Flag taxonomy v1.0 (40 flags across 6 domains)
 - [ ] Rules engine with configurable severity escalation
 - [ ] Text preprocessor with sentence splitting and offset tracking
-- [ ] NRC Emotion Lexicon integration
-- [ ] Default pattern library (~150-200 patterns)
+- [ ] Behavioral health emotion lexicon integration
+- [ ] Default pattern library (~330 patterns across 40 flags)
 
 ### Next (v0.2)
 - [ ] ONNX transformer inference layer (bh-sentinel-ml)

@@ -1250,10 +1250,11 @@ bh-sentinel/
 │       ├── pyproject.toml
 │       └── README.md
 ├── config/
-│   ├── patterns.yaml                  # Default pattern library (~150-200 patterns)
+│   ├── patterns.yaml                  # Default pattern library (~330 patterns across 40 flags)
 │   ├── rules.json                     # Default rules engine configuration
 │   ├── flag_taxonomy.json             # Versioned flag taxonomy (v1.0.0)
-│   └── emotion_lexicon.json           # Behavioral health emotion lexicon data (project-owned)
+│   ├── emotion_lexicon.json           # Behavioral health emotion lexicon data (project-owned)
+│   └── test_fixtures.yaml             # Pattern test fixtures (84 cases across all 40 flags)
 ├── deployment/
 │   ├── aws-lambda/
 │   │   ├── handler.py                 # Lambda entry point + container init
@@ -1725,7 +1726,7 @@ true_negatives (5 fixtures)
   5/5 passed
 
 ==============================
-52/52 fixtures passed (0 failed)
+84/84 fixtures passed (0 failed)
 ```
 
 On failure, the output shows exactly what went wrong:
@@ -1812,7 +1813,7 @@ No SageMaker costs. Transformer model runs in-process within the Lambda containe
 - [ ] Behavioral health emotion lexicon integration (in-process, ~2ms) — see Section 4.5 Layer 3
 - [ ] Rules engine (condition DSL, severity escalation/de-escalation, compound risk, recommended_action)
 - [ ] Pipeline orchestrator with asyncio.gather and graceful degradation
-- [ ] Draft patterns.yaml: ~150-200 patterns across all 6 domains including clinical shorthand
+- [ ] Draft patterns.yaml: ~330 patterns across all 40 flags and 6 domains including clinical shorthand
 - [ ] Config validation CLI (`bh_sentinel.cli validate-config`) — see Section 3.3
 - [ ] Pattern test runner CLI (`bh_sentinel.cli test-patterns`) with clinician-readable output — see Section 10.5
 - [ ] Test fixtures (`config/test_fixtures.yaml`) covering positive, negative, negation, temporal, and multi-flag scenarios — see Section 10.5
@@ -1871,7 +1872,6 @@ No SageMaker costs. Transformer model runs in-process within the Lambda containe
 - [ ] Group session note analysis patterns
 - [ ] Model retraining pipeline (new container image per model version)
 - [ ] Clinician feedback dashboard (precision/recall from dismiss actions)
-- [ ] bh-audit-logger integration for compliance tracking
 
 ---
 

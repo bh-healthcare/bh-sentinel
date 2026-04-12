@@ -19,7 +19,7 @@ Criterion 4 is addressed through the `basis_description`, `evidence_span`, and `
 
 ### Criterion 1: Does not acquire, process, or analyze a medical image or signal
 
-bh-sentinel is designed to operate on already-generated clinical documentation and structured medical information rather than on raw device outputs. It does not ingest radiology images, waveform data, or physiologic signal streams for diagnostic interpretation. The product's core function is to identify documentation gaps, coding inconsistencies, and compliance-relevant omissions within text and record-derived artifacts.
+bh-sentinel is designed to operate on already-generated clinical documentation and structured medical information rather than on raw device outputs. It does not ingest radiology images, waveform data, or physiologic signal streams for diagnostic interpretation. The product's core function is to identify clinical safety signals within text and record-derived artifacts.
 
 This distinction matters because software that directly analyzes an image, electrocardiogram waveform, continuous physiologic stream, or similarly device-like signal can fall outside the Non-Device CDS exclusion. bh-sentinel should therefore be deployed so that:
 
@@ -33,7 +33,7 @@ The principal concern under this criterion is analysis of primary diagnostic ima
 
 bh-sentinel fits this criterion because it organizes and analyzes existing medical information supplied in the clinical record. Its outputs are tied to identifiable source material and are intended to highlight what is present, missing, inconsistent, or potentially relevant for downstream human review.
 
-Criterion 2 is satisfied most directly because the software displays and analyzes medical information that the healthcare professional can already review in the patient's record, such as notes, problem lists, medication history, laboratory results, and related documentation artifacts. In practice, bh-sentinel should maintain:
+Criterion 2 is satisfied most directly because the software displays and analyzes medical information that the healthcare professional can already review in the patient's record, such as clinical notes, intake assessments, patient communications, and journal entries. In practice, bh-sentinel should maintain:
 
 - Clear linkage between each flag and the underlying source content.
 - Output phrasing that frames results as record-based findings or prompts for review.
@@ -41,9 +41,9 @@ Criterion 2 is satisfied most directly because the software displays and analyze
 
 ### Criterion 3: Supports or provides recommendations to a healthcare professional
 
-bh-sentinel is intended to support professional decision-making by surfacing documentation issues and possible follow-up considerations. That is consistent with the CDS exclusion so long as the product remains assistive and is directed to healthcare professionals rather than autonomous patient-facing decision-making.
+bh-sentinel is intended to support professional decision-making by surfacing clinical safety signals and recommending validated assessment workflows (e.g., "Administer C-SSRS per organization protocol"). That is consistent with the CDS exclusion so long as the product remains assistive and is directed to healthcare professionals rather than autonomous patient-facing decision-making.
 
-In this context, documentation and coding integrity support prevention, diagnosis, and treatment by helping ensure that the patient's conditions, clinical reasoning, and care activities are accurately represented in the record that healthcare professionals use to make and communicate care decisions.
+In this context, clinical safety signal detection supports prevention, diagnosis, and treatment by alerting healthcare professionals to potential risk indicators — such as suicidal ideation, medication non-adherence, or substance use escalation — that may warrant clinical follow-up or validated assessment.
 
 The compliance position is strongest when the product:
 
@@ -51,7 +51,7 @@ The compliance position is strongest when the product:
 - Assumes clinical judgment remains necessary before any diagnosis, treatment, or coding action is taken.
 - Avoids language suggesting that the output is final, determinative, or self-executing.
 
-This criterion becomes harder to satisfy if the software is marketed as automatically determining what diagnosis should be entered, what treatment must occur, or whether a patient definitively has a condition.
+This criterion becomes harder to satisfy if the software is marketed as automatically determining clinical risk levels, diagnostic conclusions, or treatment requirements without clinician review.
 
 ### Criterion 4: Enables independent review of the basis for the recommendation
 
@@ -86,7 +86,7 @@ Organizations deploying bh-sentinel should align product configuration, clinical
 - Preserve display of `basis_description`, `evidence_span`, and related rationale fields in the production interface, and render span-based evidence in visible source context rather than as offsets alone.
 - Require human review before documentation, coding, diagnosis, or treatment changes are finalized.
 - Maintain audit logs showing what recommendation was presented, what evidence was shown, and what action the user ultimately took.
-- Train users that bh-sentinel is a documentation and decision-support aid, not a substitute for clinical judgment.
+- Train users that bh-sentinel is a clinical decision-support aid, not a substitute for clinical judgment.
 - Review new features for regulatory impact before release, especially features involving automation, summarization, prioritization, or new data modalities.
 
 From a governance perspective, deployment teams should treat the Non-Device CDS rationale as a living compliance position. Material product changes, new integrations, or new marketing claims should trigger renewed legal and regulatory review.
