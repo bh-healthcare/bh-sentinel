@@ -17,6 +17,8 @@ from bh_sentinel.core.models.response import (
     AnalysisResponse,
     AnalysisSummary,
     EmotionResult,
+    ErrorCode,
+    ErrorResponse,
     PipelineStatus,
 )
 
@@ -29,6 +31,8 @@ __all__ = [
     "DetectionLayer",
     "Domain",
     "EmotionResult",
+    "ErrorCode",
+    "ErrorResponse",
     "EvidenceSpan",
     "Flag",
     "LayerStatus",

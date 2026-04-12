@@ -28,15 +28,15 @@
         },
         {
           "flag_id": "SH-004",
-          "name": "Active suicidal ideation, with plan",
-          "description": "Specific plan for suicide.",
+          "name": "Active suicidal ideation, with some intent",
+          "description": "Some intent or expectation of acting on suicidal thoughts, without a specific plan.",
           "default_severity": "CRITICAL",
           "c_ssrs_mapping": "Active Suicidal Ideation with Some Intent to Act, without Specific Plan"
         },
         {
           "flag_id": "SH-005",
-          "name": "Active suicidal ideation, with intent",
-          "description": "Intent to act on suicidal thoughts.",
+          "name": "Active suicidal ideation, with plan and intent",
+          "description": "Specific plan for suicide with stated intent to act.",
           "default_severity": "CRITICAL",
           "c_ssrs_mapping": "Active Suicidal Ideation with Specific Plan and Intent"
         },

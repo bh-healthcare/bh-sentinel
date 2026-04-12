@@ -1,5 +1,8 @@
 # bh-sentinel Pattern Library
 #
+# patterns_version: "1.0.0"
+# requires_taxonomy_version: "1.0.x"
+#
 # Each domain contains flags, each flag contains patterns, negation phrases,
 # optional clinical shorthand, and a default confidence score. Patterns are
 # compiled to regex at load time (case-insensitive). The pattern matcher
@@ -10,10 +13,20 @@
 # are valid regex. Use regex syntax (e.g. "(?:\-|negative) (?:for )?SI")
 # when matching needs to be more specific than a literal substring.
 #
-# Full library (~150-200 patterns) will be populated during implementation.
+# Covers all 40 flags across 6 domains. See config/flag_taxonomy.json for
+# flag definitions and default severity levels. See docs/flag-taxonomy.md
+# for full clinical definitions and C-SSRS mappings.
+
+_meta:
+  patterns_version: "1.0.0"
+  requires_taxonomy_version: "1.0.x"
+
+# =============================================================================
+# SELF-HARM AND SUICIDAL IDEATION (SH-001 through SH-008)
+# =============================================================================
 
 self_harm:
-  SH-001:  # Passive death wish
+  SH-001:  # Passive death wish (HIGH)
     patterns:
       - "wish(?:es|ed)? (?:I |he |she |they )?(?:was|were|would be) dead"
       - "better off dead"
@@ -28,7 +41,7 @@ self_harm:
     negation_phrases: ["don't", "no longer", "used to", "not anymore", "denies"]
     confidence: 0.92
 
-  SH-002:  # Active SI - nonspecific
+  SH-002:  # Active SI - nonspecific (CRITICAL)
     patterns:
       - "want(?:s|ed|ing)? to (?:kill|end) (?:myself|my life|it all)"
       - "thinking (?:about|of) (?:killing|ending) (?:myself|my life)"
@@ -41,7 +54,7 @@ self_harm:
     negation_phrases: ["denies", "no", "not", "never", "(?:\\-|negative) (?:for )?SI"]
     confidence: 0.95
 
-  SH-003:  # Active SI - with method
+  SH-003:  # Active SI - with method (CRITICAL)
     patterns:
       - "(?:kill|end|hang|shoot|cut|stab|drown|poison|overdose|jump)(?:ing)? (?:myself|my life)"
       - "thinking (?:about|of) (?:taking|using) (?:pills|a gun|a knife|a rope)"
@@ -53,8 +66,92 @@ self_harm:
     negation_phrases: ["denies", "no", "not", "never", "(?:\\-|negative) (?:for )?SI"]
     confidence: 0.96
 
+  SH-004:  # Active SI - with some intent, no plan (CRITICAL)
+    patterns:
+      - "(?:I'?m |I am )?going to (?:kill myself|end (?:my life|it(?: all)?))"
+      - "(?:I will|I'?m going to) (?:do it|end it|kill myself)"
+      - "(?:can'?t|don'?t) (?:promise|guarantee) (?:I )?(?:won'?t|will not) (?:do (?:something|it)|hurt myself|try)"
+      - "don'?t (?:think|know if) (?:I )?can (?:stay|keep myself|be) safe"
+      - "(?:might|may|probably will) (?:try to )?(?:kill myself|end it|do something)"
+      - "(?:it'?s |is )?(?:only )?a matter of time"
+      - "don'?t (?:want to|think I can) (?:fight it|resist|hold on) (?:anymore|much longer)"
+    clinical_shorthand:
+      - "SI (?:with|w/) (?:some )?intent"
+      - "pt (?:reports|endorses|expresses) intent"
+      - "intent (?:present|endorsed|reported) without (?:specific )?plan"
+    negation_phrases: ["denies", "no", "not", "never", "(?:\\-|negative) (?:for )?SI"]
+    confidence: 0.96
+
+  SH-005:  # Active SI - with plan and intent (CRITICAL)
+    patterns:
+      - "(?:I'?m |I am )?going to (?:take|use|get) (?:the |my |all (?:the |my )?)(?:pills|gun|rope|knife)"
+      - "(?:plan|know) (?:exactly )?(?:how|when|where) (?:and (?:when|how) )?(?:I'?m |I am )?going to (?:do it|kill myself|end it)"
+      - "have (?:a |my )?plan and (?:I'?m |I am )?going to (?:go through with it|do it|follow through)"
+      - "(?:tonight|tomorrow|this weekend|when (?:everyone|they|he|she) (?:leaves?|is gone|falls? asleep)) (?:I'?m |I am )?going to"
+      - "(?:I'?ve |I have )?(?:decided|made up my mind) (?:to|that I'?m going to) (?:end it|kill myself|do it)"
+    clinical_shorthand:
+      - "SI (?:with|w/) plan and intent"
+      - "pt (?:reports|endorses) plan and intent"
+      - "active SI (?:with|w/) (?:specific )?plan and intent"
+    negation_phrases: ["denies", "no", "not", "never", "(?:\\-|negative) (?:for )?SI"]
+    confidence: 0.97
+
+  SH-006:  # Preparatory behavior (CRITICAL)
+    patterns:
+      - "(?:writing|wrote|written) (?:a )?(?:goodbye|farewell|suicide) (?:letter|note|message)"
+      - "(?:giving|gave) away (?:my |his |her |their )?(?:things|belongings|possessions|stuff)"
+      - "(?:saving|collecting|stockpiling|hoarding) (?:pills|medication|meds)"
+      - "(?:bought|purchased|obtained|got) (?:a )?(?:gun|firearm|rope|knife|razor)"
+      - "(?:researching|looking up|googling|searching) (?:ways|how|methods) to (?:kill myself|die|end it|commit suicide)"
+      - "(?:went|going|drove) to (?:the )?(?:bridge|overpass|roof|train tracks|railroad)"
+      - "(?:put(?:ting)?|getting|got) (?:my )?(?:affairs|things|finances|will) in order"
+      - "(?:making|made) (?:arrangements|plans) (?:for|in case) (?:after|when) (?:I'?m gone|I die)"
+    clinical_shorthand:
+      - "preparatory (?:acts?|behavior|behaviour)"
+      - "pt (?:reports|endorses|describes) preparatory (?:behavior|acts?)"
+    negation_phrases: ["denies", "no", "not", "never"]
+    confidence: 0.95
+
+  SH-007:  # Self-injury without suicidal intent (HIGH)
+    patterns:
+      - "(?:cutting|cut) (?:myself|my (?:arms?|wrists?|legs?|thighs?))"
+      - "(?:burning|burned|burnt) myself"
+      - "(?:hitting|hit|punching|punched) (?:myself|my (?:head|face|body))"
+      - "(?:scratching|scratched) (?:myself|my (?:skin|arms?)) (?:until|till) (?:it )?(?:bleeds?|bled)"
+      - "(?:biting|bit) myself"
+      - "(?:pulling|pulled?) (?:out )?(?:my )?hair"
+      - "(?:banging|banged?) (?:my )?head"
+      - "(?:hurting|hurt) myself (?:on purpose|intentionally|deliberately)"
+    clinical_shorthand:
+      - "(?:NSSI|non-?suicidal self[- ]?injury) (?:present|endorsed|reported|active)"
+      - "pt (?:c/o|reports|endorses) (?:NSSI|self[- ]?harm|self[- ]?injury|cutting)"
+      - "(?:\\+|positive) (?:for )?(?:NSSI|self[- ]?harm)"
+      - "self[- ]?injurious behavior"
+    negation_phrases: ["denies", "no", "not", "never", "stopped", "used to", "(?:\\-|negative) (?:for )?(?:NSSI|self[- ]?harm)"]
+    confidence: 0.91
+
+  SH-008:  # History of attempt referenced (HIGH)
+    patterns:
+      - "(?:tried|attempted) to (?:kill myself|end my life|commit suicide)"
+      - "(?:previous|prior|past|last) (?:suicide )?attempt"
+      - "(?:overdosed|OD'?d) (?:before|previously|in the past|last (?:year|month|week|time))"
+      - "(?:was|got) hospitalized (?:for|after) (?:a )?(?:suicide )?attempt"
+      - "(?:I |he |she |they )?(?:survived|made) (?:a |an )?(?:suicide )?attempt"
+      - "(?:history|hx) of (?:suicide )?attempt"
+    clinical_shorthand:
+      - "(?:hx|history) (?:of )?(?:SA|suicide attempt)"
+      - "prior (?:SA|attempt)"
+      - "(?:previous|past) (?:SA|suicide attempt)"
+      - "pt (?:reports|endorses) (?:prior|past|previous|hx of) attempt"
+    negation_phrases: ["no (?:prior|previous|past) (?:attempts?|hx)", "denies (?:prior|previous|past) attempt"]
+    confidence: 0.90
+
+# =============================================================================
+# HARM TO OTHERS (HO-001 through HO-006)
+# =============================================================================
+
 harm_to_others:
-  HO-001:  # Homicidal ideation - nonspecific
+  HO-001:  # Homicidal ideation - nonspecific (CRITICAL)
     patterns:
       - "want(?:s|ed|ing)? to (?:hurt|harm|kill) (?:someone|people|them|him|her)"
       - "thinking (?:about|of) (?:hurting|harming|killing)"
@@ -67,8 +164,80 @@ harm_to_others:
     negation_phrases: ["don't", "no", "not", "never", "denies", "(?:\\-|negative) (?:for )?HI"]
     confidence: 0.93
 
+  HO-002:  # Homicidal ideation - specific target (CRITICAL)
+    patterns:
+      - "(?:want|going|plan(?:ning)?) to (?:kill|hurt|harm) (?:my |his |her |their )?(?:wife|husband|partner|spouse|girlfriend|boyfriend|ex|mother|father|mom|dad|boss|teacher|neighbor|roommate)"
+      - "(?:want|going|plan(?:ning)?) to (?:kill|hurt|harm) (?:him|her|them) (?:for|because)"
+      - "(?:I'?ll|I will|I'?m going to) (?:kill|hurt|get) (?:him|her|them)"
+      - "know(?:s)? where (?:he|she|they) (?:lives?|works?|goes?)"
+    clinical_shorthand:
+      - "HI (?:with|w/) (?:specific |identified )?target"
+      - "pt (?:reports|endorses|identifies) (?:specific )?target"
+      - "(?:named|identified|specific) target"
+    negation_phrases: ["denies", "no", "not", "never", "(?:\\-|negative) (?:for )?HI"]
+    confidence: 0.94
+
+  HO-003:  # Homicidal ideation - with plan (CRITICAL)
+    patterns:
+      - "(?:have|has|got) (?:a )?plan to (?:kill|hurt|harm|attack)"
+      - "know(?:s)? (?:exactly )?(?:how|when|where) (?:I'?m |I am )?going to (?:do it|get (?:him|her|them)|hurt (?:him|her|them))"
+      - "(?:bought|got|have) (?:a )?(?:gun|weapon|knife) (?:for|to use on|to (?:get|hurt|kill))"
+      - "(?:waiting for|planning|picking) (?:the right )?(?:time|moment|opportunity) to"
+    clinical_shorthand:
+      - "HI (?:with|w/) plan"
+      - "pt (?:reports|endorses|describes) (?:homicidal )?plan"
+      - "(?:\\+|positive) (?:for )?HI (?:with|w/) plan"
+    negation_phrases: ["denies", "no", "not", "never", "(?:\\-|negative) (?:for )?HI"]
+    confidence: 0.95
+
+  HO-004:  # Violent urges (HIGH)
+    patterns:
+      - "(?:urge|impulse|need) to (?:hit|punch|attack|hurt|strangle|choke)"
+      - "(?:feel(?:s|ing)? like|afraid) (?:I'?m |I am )?going to (?:snap|lose (?:it|control)|explode|go off)"
+      - "can'?t (?:control|contain|hold back) (?:myself|my (?:anger|rage|temper))"
+      - "(?:so |really |extremely )?(?:angry|enraged|furious) (?:I )?(?:could|might|want to) (?:hurt|hit|punch|kill)"
+      - "(?:fists?|hands?) (?:are )?(?:clenching|clenched|balled up|shaking)"
+      - "seeing red"
+    clinical_shorthand:
+      - "(?:violent|aggressive) urges? (?:present|endorsed|reported)"
+      - "pt (?:reports|endorses) (?:violent|aggressive) urges?"
+      - "impulse control (?:concern|difficulty|problems?)"
+    negation_phrases: ["denies", "no", "not", "used to", "no longer"]
+    confidence: 0.89
+
+  HO-005:  # Abuse disclosure - perpetrating (HIGH)
+    patterns:
+      - "(?:hit|struck|slapped|punched|kicked|choked|pushed|shoved|grabbed) (?:my |his |her |their )?(?:partner|wife|husband|spouse|girlfriend|boyfriend|child|kid|son|daughter)"
+      - "(?:hurt|harmed|injured) (?:my |his |her |their )?(?:partner|wife|husband|spouse|girlfriend|boyfriend|child|kid)"
+      - "(?:lost (?:my |his |her |their )?temper|blew up|went off) (?:on|at) (?:him|her|them|my)"
+      - "put (?:my |his |her |their )?hands? on"
+    clinical_shorthand:
+      - "(?:DV|IPV|domestic violence) (?:perpetration|perpetrator)"
+      - "pt (?:reports|discloses|admits) (?:hitting|hurting|abusing)"
+    negation_phrases: ["denies", "no", "not", "never"]
+    confidence: 0.88
+
+  HO-006:  # Abuse disclosure - experiencing (HIGH)
+    patterns:
+      - "(?:partner|wife|husband|spouse|girlfriend|boyfriend|parent|father|mother|mom|dad) (?:hits?|struck|slaps?|punches?|kicks?|chokes?|pushes?|shoves?|grabs?|hurts?|abuses?|beats?) (?:me|him|her|them)"
+      - "(?:being|getting|been) (?:hit|beaten|abused|assaulted|hurt|raped|molested) (?:by|at home)"
+      - "(?:afraid|scared|terrified) of (?:my |his |her |their )?(?:partner|wife|husband|spouse|girlfriend|boyfriend|parent|father|mother)"
+      - "(?:he|she|they|partner) (?:threatens?|threatened) to (?:kill|hurt|harm)"
+      - "(?:forced|coerced|made) (?:me|him|her|them) to (?:have sex|do (?:things|sexual))"
+      - "(?:can'?t|don'?t) feel safe (?:at home|around (?:him|her|them|my))"
+    clinical_shorthand:
+      - "(?:DV|IPV|domestic violence) (?:victim|survivor|disclosure)"
+      - "pt (?:reports|discloses) (?:being )?(?:abused|assaulted|victimized)"
+      - "(?:physical|sexual|emotional|domestic) abuse (?:disclosed|reported|endorsed)"
+    negation_phrases: ["denies", "no", "not", "no longer", "used to"]
+    confidence: 0.89
+
+# =============================================================================
+# MEDICATION NON-ADHERENCE (MED-001 through MED-005)
+# =============================================================================
+
 medication:
-  MED-001:  # Non-adherence - stated
+  MED-001:  # Non-adherence - stated (MEDIUM)
     patterns:
       - "stopped taking (?:my |the )?(?:medication|meds|pills|prescription)"
       - "haven'?t (?:taken|been taking) (?:my |the )?(?:medication|meds)"
@@ -81,24 +250,196 @@ medication:
       - "non-?compliant (?:with|re:?) (?:meds|medication)"
     confidence: 0.88
 
-substance_use:
-  SU-001:  # Active substance use disclosed
+  MED-002:  # Non-adherence - implied (MEDIUM)
     patterns:
-      - "(?:using|used|smoking|drinking) (?:again|daily|every day)"
-      - "relapsed"
-      - "started (?:using|drinking|smoking) again"
+      - "(?:forgot|forget|forgetting) to (?:take|pick up|refill) (?:my |the )?(?:medication|meds|pills|prescription)"
+      - "(?:pharmacy|drugstore) (?:was |is )?(?:closed|out of (?:stock|it))"
+      - "(?:prescription|rx) (?:expired|ran out|wasn'?t (?:ready|filled))"
+      - "don'?t (?:like|want to|feel like) (?:taking|swallowing) (?:my |the )?(?:medication|meds|pills)"
+      - "(?:keep|keeps?) (?:forgetting|missing) (?:my |the )?(?:doses?|medication|meds)"
+      - "(?:insurance|coverage) (?:won'?t|doesn'?t) (?:cover|pay for) (?:my |the )?(?:medication|meds|prescription)"
+      - "(?:haven'?t|have not) (?:picked up|refilled|gotten) (?:my |the )?(?:medication|meds|prescription)"
     confidence: 0.85
 
+  MED-003:  # Medication misuse (HIGH)
+    patterns:
+      - "(?:taking|took|taken) (?:more|extra|double|triple) (?:my |the )?(?:dose|doses|medication|meds|pills)"
+      - "(?:doubling|doubled) up (?:on )?(?:my |the )?(?:dose|doses|medication|meds)"
+      - "(?:saving|stockpiling|hoarding|collecting) (?:my |the )?(?:pills|medication|meds)"
+      - "(?:mixing|mix(?:ed)?) (?:my |the )?(?:medication|meds|pills) with (?:alcohol|booze|drinks?)"
+      - "(?:taking|using) (?:someone else'?s|not my) (?:medication|meds|pills|prescription)"
+      - "(?:crushing|snorting|injecting) (?:my |the )?(?:medication|meds|pills)"
+    clinical_shorthand:
+      - "(?:medication|med) misuse"
+      - "pt (?:reports|endorses|admits) (?:med(?:ication)? )?(?:misuse|overuse)"
+    negation_phrases: ["denies", "no", "not", "never"]
+    confidence: 0.90
+
+  MED-004:  # Adverse reaction reported (MEDIUM)
+    patterns:
+      - "(?:medication|meds|pills) (?:makes?|is making|made) (?:me |him |her |them )?(?:feel (?:sick|nauseous|dizzy|tired|drowsy|worse|terrible|awful)|sick|nauseous|dizzy)"
+      - "(?:having|had|getting) (?:bad |terrible |serious )?(?:side effects?|reactions?) (?:from|to|with) (?:my |the )?(?:medication|meds)"
+      - "(?:can'?t (?:sleep|eat|think|function|concentrate)|gained weight|feel(?:s|ing)? (?:numb|flat|like a zombie)) (?:since|after|from|on) (?:my |the )?(?:medication|meds)"
+      - "(?:medication|meds|pills) (?:is|are) making (?:things|it|me) worse"
+    clinical_shorthand:
+      - "(?:adverse|side) (?:effect|reaction) (?:reported|endorsed)"
+      - "pt (?:reports|c/o|endorses) (?:side effects?|adverse (?:effects?|reactions?))"
+    confidence: 0.86
+
+  MED-005:  # Desire to discontinue (MEDIUM)
+    patterns:
+      - "(?:want|going|plan(?:ning)?) to (?:stop|quit|come off|get off|discontinue) (?:my |the )?(?:medication|meds|pills)"
+      - "don'?t (?:want|need|think I need) (?:to take )?(?:my |the )?(?:medication|meds|pills) (?:anymore|any (?:longer|more))"
+      - "(?:thinking|thought) (?:about|of) (?:stopping|quitting|going off) (?:my |the )?(?:medication|meds)"
+      - "(?:tired|sick) of (?:taking|being on) (?:my |the )?(?:medication|meds|pills)"
+      - "don'?t (?:think|believe) (?:my |the )?(?:medication|meds) (?:is|are) (?:working|helping|doing anything)"
+    clinical_shorthand:
+      - "pt (?:reports|expresses) desire to (?:d/c|discontinue|stop) (?:medication|meds)"
+    confidence: 0.86
+
+# =============================================================================
+# SUBSTANCE USE (SU-001 through SU-005)
+# =============================================================================
+
+substance_use:
+  SU-001:  # Active substance use disclosed (MEDIUM)
+    patterns:
+      - "(?:drinking|using|smoking) (?:daily|every (?:day|night)|regularly|heavily)"
+      - "(?:use|uses|smoke|smokes|drink|drinks) (?:alcohol|weed|marijuana|pot|cannabis|meth|heroin|cocaine|crack|fentanyl|opioids?|benzos?)"
+      - "(?:getting|get|been) (?:high|drunk|wasted|intoxicated) (?:regularly|often|frequently)"
+      - "(?:still|currently) (?:using|drinking|smoking|getting high)"
+    clinical_shorthand:
+      - "(?:active|current) (?:substance|alcohol|drug) (?:use|abuse)"
+      - "pt (?:reports|endorses|discloses|admits) (?:substance|alcohol|drug) use"
+      - "(?:\\+|positive) (?:for )?(?:ETOH|substance use|drug use)"
+    negation_phrases: ["denies", "no", "not", "sober", "clean", "in recovery", "(?:\\-|negative) (?:for )?(?:ETOH|substance)"]
+    confidence: 0.85
+
+  SU-002:  # Relapse indicator (HIGH)
+    patterns:
+      - "relapsed"
+      - "(?:started|began) (?:using|drinking|smoking) again"
+      - "(?:fell|falling) off the wagon"
+      - "(?:picked|picking) (?:it )?(?:back )?up again"
+      - "(?:went|going) back to (?:using|drinking|smoking|my old (?:habits|ways))"
+      - "(?:was|had been) (?:sober|clean) (?:for |but )"
+      - "(?:couldn'?t|can'?t) (?:stay|remain|keep) (?:sober|clean|away from)"
+      - "(?:broke|breaking) (?:my )?sobriety"
+    clinical_shorthand:
+      - "(?:relapse|return to use) (?:reported|endorsed|disclosed)"
+      - "pt (?:reports|endorses|discloses) relapse"
+    negation_phrases: ["denies", "no", "not", "hasn't", "has not"]
+    confidence: 0.90
+
+  SU-003:  # Substance use escalation (HIGH)
+    patterns:
+      - "(?:using|drinking|smoking) (?:more|a lot more|way more) (?:than (?:before|usual|I used to))?"
+      - "(?:increased|increasing|upped|doubled|tripled) (?:my |the )?(?:use|intake|drinking|amount)"
+      - "(?:can'?t|don'?t|unable to) (?:stop|cut back|control|limit) (?:my )?(?:use|drinking|smoking|intake)"
+      - "(?:need|needing) more to (?:feel|get) (?:the same|any) (?:effect|high|buzz|relief)"
+      - "(?:lost|losing) control (?:of|over) (?:my )?(?:use|drinking|habit)"
+      - "(?:went|going) from (?:occasional|weekend|social) to (?:daily|every day|constant)"
+    clinical_shorthand:
+      - "(?:substance|use) escalation"
+      - "(?:increased|increasing) (?:tolerance|use|consumption)"
+      - "pt (?:reports|endorses) (?:escalation|increased use|loss of control)"
+    negation_phrases: ["denies", "no", "not", "stable", "same amount"]
+    confidence: 0.87
+
+  SU-004:  # Withdrawal symptoms (HIGH)
+    patterns:
+      - "(?:shaking|trembling|tremors?) (?:when|after|since|if) (?:I |he |she |they )?(?:don'?t|stop|haven'?t)"
+      - "(?:sweating|sweats|cold sweats|night sweats) (?:when|from|since) (?:not |stopping |cutting )?(?:using|drinking)"
+      - "(?:feel(?:s|ing)?|getting) (?:sick|nauseous|vomiting) (?:without|when (?:not |I don'?t ))"
+      - "(?:can'?t (?:sleep|eat|sit still|stop shaking))"
+      - "(?:withdrawal|withdrawing|detox(?:ing)?|going through withdrawal|in withdrawal)"
+      - "(?:DTs?|delirium tremens)"
+      - "(?:seizure|convulsion) (?:risk|concern|from (?:withdrawal|stopping|detox))"
+    clinical_shorthand:
+      - "(?:withdrawal|w/d|detox) (?:symptoms?|s/s|present|active)"
+      - "pt (?:reports|endorses|presents with) (?:withdrawal|w/d|detox) (?:symptoms?|s/s)"
+      - "(?:CIWA|COWS) (?:score|protocol|assessment)"
+    negation_phrases: ["denies", "no", "not", "resolved", "completed detox"]
+    confidence: 0.89
+
+  SU-005:  # Risky substance behavior (HIGH)
+    patterns:
+      - "(?:mixing|mixed) (?:drugs|substances|pills|medication|meds) (?:with|and) (?:alcohol|other (?:drugs|substances|pills))"
+      - "(?:using|used|injecting|injected|shooting up|shot up) (?:with )?(?:a )?(?:needle|IV|intravenously)"
+      - "(?:using|used|getting high|drinking) (?:alone|by myself|when no one (?:is|was) (?:around|home))"
+      - "(?:drove|driving|drive) (?:while|after|when) (?:drunk|high|intoxicated|under the influence)"
+      - "(?:blacked out|blackout|passed out|lost consciousness) (?:from|after|while) (?:drinking|using)"
+      - "(?:shared|sharing) (?:needles?|works?|equipment|pipes?)"
+    clinical_shorthand:
+      - "(?:high[- ]?risk|risky|dangerous) (?:substance|drug|use) (?:behavior|pattern)"
+      - "(?:IV|intravenous) (?:drug )?use"
+      - "(?:polysubstance|poly[- ]?drug) (?:use|abuse)"
+    negation_phrases: ["denies", "no", "not", "never", "stopped"]
+    confidence: 0.88
+
+# =============================================================================
+# CLINICAL DETERIORATION (CD-001 through CD-008, CD-005a-d)
+# =============================================================================
+
 clinical_deterioration:
-  CD-001:  # Hopelessness
+  CD-001:  # Hopelessness (HIGH)
     patterns:
       - "(?:no|lost|losing) (?:hope|point|purpose|reason)"
       - "(?:nothing|things) (?:will|would|can) (?:never )?(?:get better|change|improve)"
       - "what'?s the (?:use|point)"
       - "give(?:n|ing) up"
+    clinical_shorthand:
+      - "(?:pervasive|significant|severe) hopelessness"
+      - "pt (?:reports|endorses|expresses) hopelessness"
+    negation_phrases: ["denies", "no longer", "used to", "improving"]
     confidence: 0.85
 
-  CD-005a:  # Auditory hallucinations
+  CD-002:  # Severe isolation (MEDIUM)
+    patterns:
+      - "(?:haven'?t|have not) (?:left|been outside|gone out|seen anyone) (?:in|for) (?:days|weeks|a (?:long )?while)"
+      - "(?:don'?t|do not) (?:talk to|see|hear from) (?:anyone|anybody|people) (?:anymore|any longer)"
+      - "(?:stopped|quit) (?:going to|attending) (?:group|therapy|sessions?|appointments?|treatment)"
+      - "(?:completely|totally) (?:alone|isolated|cut off|withdrawn)"
+      - "(?:don'?t|won'?t) (?:leave|go out of|come out of) (?:my |the )?(?:house|room|apartment|bed)"
+      - "(?:pushed|pushing|cut(?:ting)?) (?:everyone|everybody|people|friends?|family) (?:away|out)"
+      - "(?:no one|nobody) (?:calls?|texts?|visits?|checks? (?:on|in))"
+    clinical_shorthand:
+      - "(?:severe|significant|marked) (?:social )?(?:isolation|withdrawal)"
+      - "pt (?:reports|endorses) (?:isolation|withdrawal|no social contact)"
+    negation_phrases: ["denies", "improving", "reconnecting", "reaching out"]
+    confidence: 0.86
+
+  CD-003:  # Sleep disruption - severe (MEDIUM)
+    patterns:
+      - "(?:haven'?t|have not) slept (?:in|for) (?:days|nights|a (?:long )?while)"
+      - "(?:not |can'?t |unable to )(?:sleep|fall asleep|stay asleep) (?:at all|for days)"
+      - "(?:sleeping|slept|in bed) (?:all day|most of the (?:day|time))"
+      - "(?:awake|up) (?:for )?(?:days|multiple nights) (?:straight|in a row)"
+      - "(?:insomnia|can'?t sleep) (?:is |has )?(?:getting|gotten) (?:much |significantly )?worse"
+      - "(?:haven'?t|have not) (?:gotten out of|left) bed (?:in|for) (?:days|a while)"
+    clinical_shorthand:
+      - "(?:severe|significant|marked) (?:insomnia|sleep (?:disruption|disturbance|deprivation))"
+      - "(?:severe|significant) hypersomnia"
+      - "pt (?:reports|endorses) (?:no sleep|not sleeping|sleeping (?:all day|excessively))"
+    negation_phrases: ["denies", "improving", "better", "resolved"]
+    confidence: 0.86
+
+  CD-004:  # Appetite disruption - severe (MEDIUM)
+    patterns:
+      - "(?:haven'?t|have not) (?:eaten|had food|had anything to eat) (?:in|for) (?:days|a (?:long )?while)"
+      - "(?:can'?t|don'?t|unable to) (?:eat|keep (?:food|anything) down)"
+      - "(?:not eating|stopped eating|refusing (?:to eat|food|meals))"
+      - "(?:bingeing|binging|binge eating|eating and (?:purging|throwing up|vomiting))"
+      - "(?:making|make) (?:myself|him|her|them) (?:throw up|vomit|purge) (?:after eating|after meals)"
+      - "(?:lost|losing) (?:a lot of |significant )?weight (?:without trying|rapidly|quickly)"
+    clinical_shorthand:
+      - "(?:severe|significant|marked) (?:appetite (?:disruption|disturbance|loss)|anorexia|food refusal)"
+      - "(?:binge|purge|B/P) (?:behavior|episode|reported|endorsed)"
+      - "pt (?:reports|endorses) (?:not eating|no appetite|bingeing|purging)"
+    negation_phrases: ["denies", "improving", "appetite returning", "eating (?:better|more|again)"]
+    confidence: 0.85
+
+  CD-005a:  # Auditory hallucinations (HIGH)
     patterns:
       - "hear(?:ing)? voices?"
       - "voices? (?:are |is )?(?:telling|commanding|saying|talking to)"
@@ -114,7 +455,7 @@ clinical_deterioration:
     negation_phrases: ["denies", "no", "not", "never", "(?:\\-|negative) (?:for )?(?:AH|AVH)"]
     confidence: 0.90
 
-  CD-005b:  # Visual hallucinations
+  CD-005b:  # Visual hallucinations (HIGH)
     patterns:
       - "see(?:ing|s)? (?:things?|people|shadows?|figures?) (?:that (?:aren'?t|are not|weren'?t) (?:there|real))"
       - "(?:shadows?|figures?|people) (?:that (?:no one|nobody) else can see)"
@@ -128,7 +469,7 @@ clinical_deterioration:
     negation_phrases: ["denies", "no", "not", "never", "(?:\\-|negative) (?:for )?VH"]
     confidence: 0.88
 
-  CD-005c:  # Paranoid ideation
+  CD-005c:  # Paranoid ideation (HIGH)
     patterns:
       - "(?:people|someone|they|them|everybody|everyone) (?:is|are) (?:watching|following|spying on|tracking|plotting against|out to get) (?:me|him|her|them)"
       - "being (?:watched|followed|monitored|surveilled|tracked|spied on)"
@@ -143,7 +484,7 @@ clinical_deterioration:
     negation_phrases: ["denies", "no", "not", "never", "used to"]
     confidence: 0.87
 
-  CD-005d:  # Delusional thinking
+  CD-005d:  # Delusional thinking (HIGH)
     patterns:
       - "(?:I am|I'm|he is|she is|they are) (?:god|jesus|chosen|special|the messiah|a prophet|royalty)"
       - "(?:have|has) (?:special|supernatural|magical|divine) (?:powers?|abilities|mission|purpose)"
@@ -161,10 +502,105 @@ clinical_deterioration:
     negation_phrases: ["denies", "no", "not", "never", "used to", "insight into"]
     confidence: 0.86
 
+  CD-006:  # Dissociation (MEDIUM)
+    patterns:
+      - "(?:feel(?:s|ing)? )?(?:detached|disconnected|separated) from (?:my |his |her |their )?(?:body|self|surroundings|reality)"
+      - "(?:feel(?:s|ing)? )?(?:like|as if) (?:I'?m |things are |the world is )?(?:not real|in a dream|in a movie|watching myself|outside (?:my )?body)"
+      - "(?:don'?t|do not) (?:feel|recognize) (?:like )?(?:myself|my (?:own )?(?:body|hands|face|reflection))"
+      - "(?:everything|things|the world) (?:feels?|looks?|seems?) (?:unreal|fake|foggy|dreamlike|distant|far away)"
+      - "(?:losing|lost|gaps? in|can'?t (?:remember|account for)) (?:time|hours|chunks of time|parts of the day)"
+      - "(?:spacing|zoning|blanking|checking) out (?:for (?:long periods|hours|extended))"
+    clinical_shorthand:
+      - "(?:depersonalization|derealization|dissociation|dissociative (?:symptoms?|episodes?)) (?:present|endorsed|reported|active)"
+      - "pt (?:c/o|reports|endorses) (?:dissociation|depersonalization|derealization)"
+    negation_phrases: ["denies", "no", "not", "resolved", "no longer"]
+    confidence: 0.85
+
+  CD-007:  # Panic / acute anxiety (MEDIUM)
+    patterns:
+      - "can'?t (?:breathe|catch my breath|stop (?:shaking|trembling|crying))"
+      - "(?:heart|chest) (?:is )?(?:pounding|racing|hurting|tight)"
+      - "(?:feel(?:s|ing)? )?like (?:I'?m |I am )?(?:dying|having a heart attack|going crazy|losing (?:my mind|control))"
+      - "(?:panic(?:king)?|panicked|panic attack|anxiety attack) (?:and )?can'?t (?:function|work|leave|move|think|stop)"
+      - "(?:so|extremely|overwhelmingly) (?:anxious|panicked|terrified|afraid) (?:I )?can'?t (?:function|do anything|leave|cope)"
+      - "(?:paralyzed|frozen|shut(?:ting)? down|can'?t move) (?:with|from|by) (?:fear|anxiety|panic)"
+    clinical_shorthand:
+      - "(?:acute|severe|extreme) (?:anxiety|panic) (?:present|reported|endorsed)"
+      - "(?:panic (?:attack|episode)|anxiety (?:attack|crisis)) (?:active|present|reported)"
+      - "pt (?:reports|presents with|c/o) (?:panic|acute anxiety|anxiety attack)"
+    negation_phrases: ["denies", "no", "resolved", "subsided", "improving"]
+    confidence: 0.86
+
+  CD-008:  # Mania indicators (HIGH)
+    patterns:
+      - "(?:don'?t|haven'?t) (?:need(?:ed)?|slept) (?:to sleep )?(?:and (?:feel|I'?m) (?:fine|great|amazing|full of energy))"
+      - "(?:thoughts?|mind|brain|ideas?) (?:is|are) (?:racing|going (?:a )?mile a minute|won'?t (?:stop|slow down))"
+      - "(?:feel(?:s|ing)? )?(?:invincible|unstoppable|like I can do anything|on top of the world|like a god)"
+      - "(?:talking|speaking|can'?t stop talking) (?:really |very |so )?(?:fast|quickly|non-?stop)"
+      - "(?:spent|spending|blew|blowing) (?:a lot of |too much |all (?:my )?)?money (?:I (?:don'?t|didn'?t) have|recklessly|impulsively)"
+      - "(?:haven'?t|have not) slept (?:in|for) (?:days) (?:and (?:feel|I feel) (?:fine|great|wired|energized))"
+      - "(?:starting|started) (?:multiple|a bunch of|tons of) (?:projects|businesses|plans) (?:at once|simultaneously)"
+      - "(?:hyper-?sexual|increased (?:sexual|risky) (?:behavior|activity|urges))"
+    clinical_shorthand:
+      - "(?:manic|mania|hypomanic|hypomania) (?:symptoms?|episode|features?|presentation) (?:present|endorsed|reported|active)"
+      - "pt (?:reports|endorses|presents with) (?:manic|hypomanic) (?:symptoms?|features?)"
+      - "(?:decreased|reduced|no) need for sleep (?:without fatigue|with (?:elevated|increased) energy)"
+      - "(?:pressured|rapid) speech"
+      - "(?:grandiosity|grandiose (?:thinking|ideation))"
+      - "(?:flight of ideas|loosening of associations)"
+    negation_phrases: ["denies", "no", "not", "resolved", "euthymic", "stable mood"]
+    confidence: 0.88
+
+# =============================================================================
+# PROTECTIVE FACTORS (PF-001 through PF-005)
+# =============================================================================
+
 protective_factors:
-  PF-001:  # Treatment engagement
+  PF-001:  # Treatment engagement (POSITIVE)
     patterns:
       - "(?:looking forward to|engaged in|committed to) (?:therapy|treatment|sessions?)"
       - "(?:finding|found) (?:therapy|treatment|counseling) helpful"
       - "want(?:s|ing)? to (?:continue|keep going with) (?:therapy|treatment)"
     confidence: 0.80
+
+  PF-002:  # Social support (POSITIVE)
+    patterns:
+      - "(?:family|friends?|partner|spouse|wife|husband|mom|dad|parents?) (?:is|are) (?:really )?(?:supportive|there for|helping|checking (?:on|in))"
+      - "(?:have|has) (?:good|strong|solid|great) (?:support|people|relationships?|connections?)"
+      - "(?:talking|spoke|talked) to (?:my |a )?(?:friend|family member|partner|sponsor|pastor|minister)"
+      - "(?:people|someone|they|family|friends?) (?:who )?(?:care(?:s)?|I can (?:call|talk to|count on|lean on|turn to))"
+      - "(?:going|went) to (?:church|temple|mosque|synagogue|meeting|AA|NA|support group)"
+    confidence: 0.78
+
+  PF-003:  # Future orientation (POSITIVE)
+    patterns:
+      - "(?:looking forward to|excited about|planning|can'?t wait for) (?:my |the |a )?(?:vacation|trip|birthday|graduation|wedding|baby|holidays?|weekend)"
+      - "(?:want(?:s|ing)?|plan(?:ning)?|going|hoping) to (?:go back to|start|finish|get) (?:school|college|work|a job|my (?:degree|GED))"
+      - "(?:have|has) (?:things|reasons?|people|goals?|plans?) (?:to (?:live|stay (?:alive|around)) for|worth (?:living|staying) for)"
+      - "(?:my |the )?(?:kids?|children|grandchildren|baby|family) (?:need(?:s)? me|(?:is|are) (?:my )?reason)"
+      - "(?:goals?|dreams?|plans?) for (?:the )?future"
+      - "(?:saving|working toward|building) (?:for|toward) (?:a |my )?(?:house|car|future|new life)"
+    confidence: 0.80
+
+  PF-004:  # Coping skills usage (POSITIVE)
+    patterns:
+      - "(?:using|used|practiced|practicing|tried|trying) (?:my |the )?(?:coping (?:skills?|strategies|techniques?)|grounding|breathing (?:exercises?|techniques?)|mindfulness|meditation|distraction)"
+      - "(?:went|going) for a (?:walk|run|jog|hike|drive) (?:to (?:calm down|clear my head|feel better))"
+      - "(?:journaling|wrote|writing) (?:in my journal|about (?:my )?feelings|it (?:down|out))"
+      - "(?:called|texted|reached out to|contacted) (?:my |the )?(?:crisis (?:line|hotline)|988|therapist|counselor|sponsor|support)"
+      - "(?:used|using) (?:my |the )?(?:safety plan|crisis plan|wellness plan|coping card)"
+      - "(?:took|taking) (?:a )?(?:break|timeout|step back|deep breaths?)"
+    confidence: 0.80
+
+  PF-005:  # Medication adherence (POSITIVE)
+    patterns:
+      - "(?:taking|been taking|take) (?:my |the )?(?:medication|meds|pills) (?:every day|as prescribed|regularly|consistently|without missing)"
+      - "(?:haven'?t|have not) missed (?:a )?(?:dose|any (?:doses?|medication|meds))"
+      - "(?:medication|meds) (?:is|are) (?:helping|working|making a difference|keeping me stable)"
+      - "(?:picked up|refilled|got) (?:my |the )?(?:prescription|medication|meds) (?:on time|regularly)"
+      - "(?:set(?:ting)?|use|using) (?:an? )?(?:alarm|reminder|pill (?:box|organizer)) (?:for|to (?:remember|take)) (?:my |the )?(?:medication|meds)"
+    clinical_shorthand:
+      - "(?:medication|med) (?:adherence|compliance|compliant)"
+      - "pt (?:reports|endorses) (?:medication|med) (?:adherence|compliance)"
+      - "(?:compliant|adherent) (?:with|re:?) (?:medication|meds|rx)"
+    confidence: 0.82

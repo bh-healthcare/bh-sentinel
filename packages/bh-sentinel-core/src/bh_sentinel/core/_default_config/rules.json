@@ -1,9 +1,31 @@
 {
   "rules_version": "1.0.0",
+  "requires_taxonomy_version": "1.0.x",
+
+  "schema": {
+    "condition_types": {
+      "flag_present": "A specific flag was detected. Optional min_confidence threshold.",
+      "any_flag_present": "Any of the listed flags was detected. Optional min_confidence threshold.",
+      "domain_present": "Any flag in the specified domain was detected.",
+      "domain_severity": "Any flag in the specified domain reached at least the given severity. Evaluated after escalation rules.",
+      "temporal_context": "The temporal qualifier of the matched text (past or present).",
+      "emotion_above": "A Layer 3 emotion score exceeds the given threshold. Use sparingly; flag co-occurrence is preferred over raw emotion scores for clinical decisions.",
+      "domain_flag_count": "Total count of detected flags and L2 candidate detections in a domain meets or exceeds min_count. L1 pattern matches (post-negation, post-temporal) always count. Set include_l2_candidates: true to also count Layer 2 detections that scored above candidate_threshold (0.4) but below emit_threshold (0.7). No fuzzy matching — L1 is always binary."
+    },
+    "action_types": {
+      "escalate_flag": "Set a specific detected flag's severity to new_severity.",
+      "escalate_flags": "Set severity for all listed flags that were detected to new_severity.",
+      "reduce_severity_by": "Reduce severity by N levels (CRITICAL > HIGH > MEDIUM > LOW).",
+      "set_requires_immediate_review": "Mark the session for immediate clinical review.",
+      "recommended_action": "Set or append a recommended clinical action string."
+    },
+    "evaluation_order": "escalation_rules first, then de_escalation_rules, then compound_rules, then action_rules. Within each category, rules are evaluated in array order."
+  },
+
   "escalation_rules": [
     {
       "id": "ESC-001",
-      "description": "Passive SI combined with strong hopelessness escalates to CRITICAL",
+      "description": "Passive SI combined with hopelessness escalates to CRITICAL",
       "condition": {
         "all_of": [
           {"flag_present": "SH-001", "min_confidence": 0.7},
@@ -18,20 +40,153 @@
     },
     {
       "id": "ESC-002",
-      "description": "Any psychosis flag co-occurring with acute anxiety escalates the psychosis flag to CRITICAL",
+      "description": "Self-injury combined with active substance use escalates NSSI to CRITICAL — substances lower inhibition and increase progression risk from NSSI to suicidal behavior",
       "condition": {
         "all_of": [
-          {"any_flag_present": ["CD-005a", "CD-005b", "CD-005c", "CD-005d"], "min_confidence": 0.7},
-          {"flag_present": "CD-007", "min_confidence": 0.7}
+          {"flag_present": "SH-007", "min_confidence": 0.7},
+          {"domain_present": "substance_use"}
         ]
       },
       "action": {
-        "escalate_flags": ["CD-005a", "CD-005b", "CD-005c", "CD-005d"],
+        "escalate_flag": "SH-007",
         "new_severity": "CRITICAL",
-        "recommended_action": "Assess for psychotic decompensation; anxiety may be prodromal or reactive to psychotic experiences"
+        "recommended_action": "Assess for suicidal intent in context of active substance use and self-injury"
+      }
+    },
+    {
+      "id": "ESC-003",
+      "description": "Active SI combined with command auditory hallucinations — command AH directing self-harm is an acute emergency",
+      "condition": {
+        "all_of": [
+          {"any_flag_present": ["SH-002", "SH-003", "SH-004", "SH-005"], "min_confidence": 0.7},
+          {"flag_present": "CD-005a", "min_confidence": 0.7}
+        ]
+      },
+      "action": {
+        "escalate_flags": ["SH-002", "SH-003", "SH-004", "SH-005", "CD-005a"],
+        "new_severity": "CRITICAL",
+        "set_requires_immediate_review": true,
+        "recommended_action": "Immediate safety assessment. Active SI with command hallucinations requires emergency evaluation."
+      }
+    },
+    {
+      "id": "ESC-004",
+      "description": "Homicidal ideation combined with substance use escalates HI to CRITICAL — intoxication amplifies violence risk and impulsivity",
+      "condition": {
+        "all_of": [
+          {"domain_present": "harm_to_others"},
+          {"domain_present": "substance_use"}
+        ]
+      },
+      "action": {
+        "escalate_flags": ["HO-001", "HO-002", "HO-003", "HO-004"],
+        "new_severity": "CRITICAL",
+        "set_requires_immediate_review": true,
+        "recommended_action": "Violence risk assessment. Substance use with homicidal ideation requires immediate provider notification."
+      }
+    },
+    {
+      "id": "ESC-005",
+      "description": "Mania indicators combined with risky substance behavior escalates CD-008 to CRITICAL — common bipolar destabilization pattern",
+      "condition": {
+        "all_of": [
+          {"flag_present": "CD-008", "min_confidence": 0.7},
+          {"flag_present": "SU-005", "min_confidence": 0.7}
+        ]
+      },
+      "action": {
+        "escalate_flag": "CD-008",
+        "new_severity": "CRITICAL",
+        "set_requires_immediate_review": true,
+        "recommended_action": "Assess for manic episode with substance-involved destabilization. Consider acute psychiatric evaluation."
+      }
+    },
+    {
+      "id": "ESC-006",
+      "description": "Prior suicide attempt combined with current SI — history of attempt is among the strongest predictors of future suicidal behavior",
+      "condition": {
+        "all_of": [
+          {"flag_present": "SH-008", "min_confidence": 0.7},
+          {"any_flag_present": ["SH-001", "SH-002", "SH-003", "SH-004", "SH-005"], "min_confidence": 0.7}
+        ]
+      },
+      "action": {
+        "escalate_flags": ["SH-001", "SH-002", "SH-003", "SH-004", "SH-005"],
+        "new_severity": "CRITICAL",
+        "recommended_action": "Administer C-SSRS. Prior attempt history with current ideation is a high-risk combination."
+      }
+    },
+    {
+      "id": "ESC-007",
+      "description": "Hopelessness combined with severe isolation escalates both to CRITICAL — removes protective factors and allows risk to escalate unmonitored",
+      "condition": {
+        "all_of": [
+          {"flag_present": "CD-001", "min_confidence": 0.7},
+          {"flag_present": "CD-002", "min_confidence": 0.7}
+        ]
+      },
+      "action": {
+        "escalate_flags": ["CD-001", "CD-002"],
+        "new_severity": "CRITICAL",
+        "set_requires_immediate_review": true,
+        "recommended_action": "Assess for acute decompensation. Hopelessness with severe isolation is a high-risk combination."
+      }
+    },
+    {
+      "id": "ESC-008",
+      "description": "Active SI combined with any destabilizing factor — substance use, withdrawal, severe isolation, or medication misuse each independently amplify near-term suicide risk",
+      "condition": {
+        "all_of": [
+          {"any_flag_present": ["SH-002", "SH-003", "SH-004", "SH-005"], "min_confidence": 0.7},
+          {"any_of": [
+            {"domain_present": "substance_use"},
+            {"flag_present": "SU-004", "min_confidence": 0.7},
+            {"flag_present": "CD-002", "min_confidence": 0.7},
+            {"flag_present": "MED-003", "min_confidence": 0.7}
+          ]}
+        ]
+      },
+      "action": {
+        "escalate_flags": ["SH-002", "SH-003", "SH-004", "SH-005"],
+        "new_severity": "CRITICAL",
+        "set_requires_immediate_review": true,
+        "recommended_action": "Active SI with destabilizing co-occurring factor. Administer C-SSRS and assess for immediate safety intervention."
+      }
+    },
+    {
+      "id": "ESC-009",
+      "description": "Active SI combined with high agitation — agitation increases impulsivity and shortens the path from ideation to action",
+      "condition": {
+        "all_of": [
+          {"any_flag_present": ["SH-002", "SH-003", "SH-004", "SH-005"], "min_confidence": 0.7},
+          {"emotion_above": {"category": "agitation", "threshold": 0.3}}
+        ]
+      },
+      "action": {
+        "escalate_flags": ["SH-002", "SH-003", "SH-004", "SH-005"],
+        "new_severity": "CRITICAL",
+        "set_requires_immediate_review": true,
+        "recommended_action": "Active SI with agitation. Agitated patients are at elevated risk of impulsive action. Prioritize immediate safety assessment."
+      }
+    },
+    {
+      "id": "ESC-010",
+      "description": "Homicidal ideation combined with high anger — intense anger amplifies violence risk and reduces impulse control",
+      "condition": {
+        "all_of": [
+          {"domain_present": "harm_to_others"},
+          {"emotion_above": {"category": "anger", "threshold": 0.3}}
+        ]
+      },
+      "action": {
+        "escalate_flags": ["HO-001", "HO-002", "HO-003", "HO-004"],
+        "new_severity": "CRITICAL",
+        "set_requires_immediate_review": true,
+        "recommended_action": "Homicidal ideation with elevated anger. Immediate violence risk assessment required."
       }
     }
   ],
+
   "de_escalation_rules": [
     {
       "id": "DE-001",
@@ -44,6 +199,7 @@
       }
     }
   ],
+
   "compound_rules": [
     {
       "id": "COMP-001",
@@ -64,14 +220,106 @@
       "description": "Anxiety-to-psychosis escalation: co-occurring anxiety and psychosis flags indicate possible decompensation requiring immediate review",
       "condition": {
         "all_of": [
-          {"flag_present": "CD-007"},
-          {"any_flag_present": ["CD-005a", "CD-005b", "CD-005c", "CD-005d"]}
+          {"flag_present": "CD-007", "min_confidence": 0.7},
+          {"any_flag_present": ["CD-005a", "CD-005b", "CD-005c", "CD-005d"], "min_confidence": 0.7}
+        ]
+      },
+      "action": {
+        "escalate_flags": ["CD-005a", "CD-005b", "CD-005c", "CD-005d"],
+        "new_severity": "CRITICAL",
+        "set_requires_immediate_review": true,
+        "recommended_action": "Evaluate for psychotic decompensation with anxiety prodrome; consider acute psychiatric assessment"
+      }
+    },
+    {
+      "id": "COMP-003",
+      "description": "Signal density: multiple sub-threshold self-harm indicators suggest accumulated preparatory or risk behavior across the text",
+      "condition": {
+        "domain_flag_count": {"domain": "self_harm", "min_count": 3, "include_l2_candidates": true}
+      },
+      "action": {
+        "set_requires_immediate_review": true,
+        "recommended_action": "Multiple self-harm indicators detected across the text. Review the full note for accumulated risk signals."
+      }
+    },
+    {
+      "id": "COMP-004",
+      "description": "Signal density: multiple sub-threshold harm-to-others indicators suggest accumulated violent risk across the text",
+      "condition": {
+        "domain_flag_count": {"domain": "harm_to_others", "min_count": 3, "include_l2_candidates": true}
+      },
+      "action": {
+        "set_requires_immediate_review": true,
+        "recommended_action": "Multiple harm-to-others indicators detected across the text. Review the full note for accumulated violence risk signals."
+      }
+    },
+    {
+      "id": "COMP-005",
+      "description": "Medication misuse or stockpiling combined with any self-harm signal — stockpiling medication while expressing SI may indicate preparatory behavior",
+      "condition": {
+        "all_of": [
+          {"flag_present": "MED-003", "min_confidence": 0.7},
+          {"domain_present": "self_harm"}
         ]
       },
       "action": {
         "set_requires_immediate_review": true,
-        "escalate_severity": "CRITICAL",
-        "recommended_action": "Evaluate for psychotic decompensation with anxiety prodrome; consider acute psychiatric assessment"
+        "recommended_action": "Assess for preparatory behavior. Medication misuse or stockpiling co-occurring with self-harm signals may indicate means acquisition."
+      }
+    },
+    {
+      "id": "COMP-006",
+      "description": "Homicidal ideation combined with paranoid ideation — paranoia can drive defensive violence and increase plausibility of acting on HI",
+      "condition": {
+        "all_of": [
+          {"domain_present": "harm_to_others"},
+          {"flag_present": "CD-005c", "min_confidence": 0.7}
+        ]
+      },
+      "action": {
+        "set_requires_immediate_review": true,
+        "recommended_action": "Violence risk assessment with focus on paranoia-driven threat perception. Evaluate reality testing."
+      }
+    },
+    {
+      "id": "COMP-007",
+      "description": "Self-injury combined with passive SI — NSSI with death wish suggests escalating risk even when neither alone is CRITICAL",
+      "condition": {
+        "all_of": [
+          {"flag_present": "SH-007", "min_confidence": 0.7},
+          {"flag_present": "SH-001", "min_confidence": 0.7}
+        ]
+      },
+      "action": {
+        "set_requires_immediate_review": true,
+        "recommended_action": "Administer C-SSRS. Active self-injury with passive death wish indicates escalating risk."
+      }
+    },
+    {
+      "id": "COMP-008",
+      "description": "Any high-acuity presentation across multiple domains suggests complex destabilization requiring coordinated review",
+      "condition": {
+        "any_of": [
+          {"all_of": [{"domain_present": "self_harm"}, {"domain_present": "substance_use"}, {"domain_present": "clinical_deterioration"}]},
+          {"all_of": [{"domain_present": "harm_to_others"}, {"domain_present": "substance_use"}, {"domain_present": "clinical_deterioration"}]}
+        ]
+      },
+      "action": {
+        "set_requires_immediate_review": true,
+        "recommended_action": "Multi-domain presentation with 3+ domains flagged. Coordinate multidisciplinary review."
+      }
+    }
+  ],
+
+  "action_rules": [
+    {
+      "id": "ACT-001",
+      "description": "Prompt C-SSRS administration for any CRITICAL self-harm flag",
+      "condition": {
+        "domain_severity": {"domain": "self_harm", "min_severity": "CRITICAL"}
+      },
+      "action": {
+        "recommended_action": "Administer C-SSRS per organization protocol"
       }
     }
   ]

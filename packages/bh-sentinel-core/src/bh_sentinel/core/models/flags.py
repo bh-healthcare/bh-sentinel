@@ -66,3 +66,4 @@ class Flag(BaseModel):
     matched_context_hint: str
     basis_description: str
     evidence_span: EvidenceSpan
+    corroborating_layers: list[DetectionLayer] = []
