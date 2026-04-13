@@ -138,6 +138,6 @@ class TextPreprocessor:
             i -= 1
         word = text[i + 1 : period_pos]
         # Handle abbreviations with dots like "e.g" or "i.e"
-        if i >= 1 and text[i] == "." and i - 1 >= 0 and text[i - 1].isalpha():
+        if i >= 1 and text[i] == "." and text[i - 1].isalpha():
             word = text[i - 1 : period_pos]
         return word if word else None

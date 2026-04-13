@@ -32,9 +32,6 @@ _SCOPE_TERMINATOR_WORDS = frozenset(
     }
 )
 
-# Conjunctive connectors: negation DOES cross these.
-_CONJUNCTIVE_CONNECTORS = frozenset({"/", "and", "or"})
-
 # Post-negation phrases that appear after the match.
 _POST_NEGATION = [
     re.compile(r"\bdenied\b", re.IGNORECASE),
