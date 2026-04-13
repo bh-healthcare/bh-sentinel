@@ -34,7 +34,7 @@ self_harm:
       - "wish I (?:could|would) (?:just )?die"
       - "wish I (?:could|would) (?:go to )?sleep and (?:never|not) wake up"
       - "everyone would be better off without me"
-      - "no reason to (?:live|go on|keep going)"
+      - "no (?:reason|point) (?:to|in) (?:live|living|go on|going on|keep going|continuing)"
       - "what'?s the point (?:anymore|of (?:living|going on|any of this))"
       - "can'?t (?:do this|take it|go on) anymore"
       - "just want (?:it|everything) to (?:stop|end|be over)"
@@ -43,15 +43,17 @@ self_harm:
 
   SH-002:  # Active SI - nonspecific (CRITICAL)
     patterns:
-      - "want(?:s|ed|ing)? to (?:kill|end) (?:myself|my life|it all)"
-      - "thinking (?:about|of) (?:killing|ending) (?:myself|my life)"
-      - "suicidal (?:thoughts?|ideation|feelings)"
-      - "can'?t (?:stop|keep from) thinking about (?:suicide|dying|ending it)"
+      - "want(?:s|ed|ing)? to (?:kill|end) (?:myself|himself|herself|themselves|themself|my life|his life|her life|their life|it all)"
+      - "thinking (?:about|of) (?:killing|ending) (?:myself|himself|herself|themselves|themself|my life|his life|her life|their life)"
+      - "suicidal (?:(?:or homicidal )?thoughts?|(?:or homicidal )?ideation|feelings)"
+      - "(?:can'?t|cannot) (?:stop|keep from) thinking about (?:suicide|dying|ending it)"
     clinical_shorthand:
       - "pt (?:c/o|reports|endorses) SI"
       - "(?:\\+|positive) (?:for )?SI"
       - "SI (?:present|endorsed|reported|active)"
-    negation_phrases: ["denies", "no", "not", "never", "(?:\\-|negative) (?:for )?SI"]
+      - "\\bSI\\b"
+      - "(?:endorses?|reports?) (?:active )?(?:suicidal )?(?:thoughts?|ideation)"
+    negation_phrases: ["denies", "no", "not", "never", "\\-SI", "(?:\\-|negative) (?:for )?SI"]
     confidence: 0.95
 
   SH-003:  # Active SI - with method (CRITICAL)
@@ -72,9 +74,10 @@ self_harm:
       - "(?:I will|I'?m going to) (?:do it|end it|kill myself)"
       - "(?:can'?t|don'?t) (?:promise|guarantee) (?:I )?(?:won'?t|will not) (?:do (?:something|it)|hurt myself|try)"
       - "don'?t (?:think|know if) (?:I )?can (?:stay|keep myself|be) safe"
-      - "(?:might|may|probably will) (?:try to )?(?:kill myself|end it|do something)"
+      - "(?:might|may|probably will|probably going to) (?:try to )?(?:kill myself|end it|do it|do something)"
       - "(?:it'?s |is )?(?:only )?a matter of time"
       - "don'?t (?:want to|think I can) (?:fight it|resist|hold on) (?:anymore|much longer)"
+      - "(?:can'?t|cannot) (?:fight it|hold on|resist) (?:anymore|much longer)"
     clinical_shorthand:
       - "SI (?:with|w/) (?:some )?intent"
       - "pt (?:reports|endorses|expresses) intent"
@@ -84,11 +87,12 @@ self_harm:
 
   SH-005:  # Active SI - with plan and intent (CRITICAL)
     patterns:
-      - "(?:I'?m |I am )?going to (?:take|use|get) (?:the |my |all (?:the |my )?)(?:pills|gun|rope|knife)"
+      - "(?:I'?m |I am |she is |he is |they are )?going to (?:take|use|get) (?:the |my |her |his |their |all (?:the |my |her |his |their )?)(?:pills|gun|rope|knife)"
       - "(?:plan|know) (?:exactly )?(?:how|when|where) (?:and (?:when|how) )?(?:I'?m |I am )?going to (?:do it|kill myself|end it)"
       - "have (?:a |my )?plan and (?:I'?m |I am )?going to (?:go through with it|do it|follow through)"
-      - "(?:tonight|tomorrow|this weekend|when (?:everyone|they|he|she) (?:leaves?|is gone|falls? asleep)) (?:I'?m |I am )?going to"
+      - "(?:tonight|tomorrow|this weekend|when (?:everyone|they|he|she|(?:my |her |his )?roommate) (?:leaves?|is gone|falls? asleep)) (?:I'?m |I am |she is |he is )?going to"
       - "(?:I'?ve |I have )?(?:decided|made up my mind) (?:to|that I'?m going to) (?:end it|kill myself|do it)"
+      - "suicidal ideation (?:with|w/) plan"
     clinical_shorthand:
       - "SI (?:with|w/) plan and intent"
       - "pt (?:reports|endorses) plan and intent"
@@ -114,20 +118,20 @@ self_harm:
 
   SH-007:  # Self-injury without suicidal intent (HIGH)
     patterns:
-      - "(?:cutting|cut) (?:myself|my (?:arms?|wrists?|legs?|thighs?))"
-      - "(?:burning|burned|burnt) myself"
-      - "(?:hitting|hit|punching|punched) (?:myself|my (?:head|face|body))"
-      - "(?:scratching|scratched) (?:myself|my (?:skin|arms?)) (?:until|till) (?:it )?(?:bleeds?|bled)"
-      - "(?:biting|bit) myself"
-      - "(?:pulling|pulled?) (?:out )?(?:my )?hair"
-      - "(?:banging|banged?) (?:my )?head"
-      - "(?:hurting|hurt) myself (?:on purpose|intentionally|deliberately)"
+      - "(?:cutting|cut) (?:myself|himself|herself|themselves|themself|(?:my|his|her|their) (?:arms?|wrists?|legs?|thighs?))"
+      - "(?:burning|burned|burnt) (?:myself|himself|herself|themselves|themself)"
+      - "(?:hitting|hit|punching|punched) (?:myself|himself|herself|themselves|themself|(?:my|his|her|their) (?:head|face|body))"
+      - "(?:scratching|scratched) (?:myself|himself|herself|themselves|themself|(?:my|his|her|their) (?:skin|arms?)) (?:until|till) (?:it )?(?:bleeds?|bled)"
+      - "(?:biting|bit) (?:myself|himself|herself|themselves|themself)"
+      - "(?:pulling|pulled?) (?:out )?(?:my |his |her |their )?hair"
+      - "(?:banging|banged?) (?:my |his |her |their )?head"
+      - "(?:hurting|hurt) (?:myself|himself|herself|themselves|themself) (?:on purpose|intentionally|deliberately)"
     clinical_shorthand:
       - "(?:NSSI|non-?suicidal self[- ]?injury) (?:present|endorsed|reported|active)"
       - "pt (?:c/o|reports|endorses) (?:NSSI|self[- ]?harm|self[- ]?injury|cutting)"
       - "(?:\\+|positive) (?:for )?(?:NSSI|self[- ]?harm)"
       - "self[- ]?injurious behavior"
-    negation_phrases: ["denies", "no", "not", "never", "stopped", "used to", "(?:\\-|negative) (?:for )?(?:NSSI|self[- ]?harm)"]
+    negation_phrases: ["denies", "no", "not", "never", "stopped", "(?:\\-|negative) (?:for )?(?:NSSI|self[- ]?harm)"]
     confidence: 0.91
 
   SH-008:  # History of attempt referenced (HIGH)
@@ -138,8 +142,9 @@ self_harm:
       - "(?:was|got) hospitalized (?:for|after) (?:a )?(?:suicide )?attempt"
       - "(?:I |he |she |they )?(?:survived|made) (?:a |an )?(?:suicide )?attempt"
       - "(?:history|hx) of (?:suicide )?attempt"
+      - "(?:history|hx) of SI"
     clinical_shorthand:
-      - "(?:hx|history) (?:of )?(?:SA|suicide attempt)"
+      - "(?:hx|history) (?:of )?(?:SA|SI|suicide attempt)"
       - "prior (?:SA|attempt)"
       - "(?:previous|past) (?:SA|suicide attempt)"
       - "pt (?:reports|endorses) (?:prior|past|previous|hx of) attempt"
@@ -153,20 +158,22 @@ self_harm:
 harm_to_others:
   HO-001:  # Homicidal ideation - nonspecific (CRITICAL)
     patterns:
-      - "want(?:s|ed|ing)? to (?:hurt|harm|kill) (?:someone|people|them|him|her)"
+      - "want(?:s|ed|ing)? to (?:hurt|harm|kill) (?:someone|people|them|him|her|others)"
       - "thinking (?:about|of) (?:hurting|harming|killing)"
       - "going to (?:hurt|harm|kill)"
       - "fantasiz(?:e|es|ing) about (?:violence|hurting|killing)"
+      - "homicidal (?:thoughts?|ideation|feelings)"
     clinical_shorthand:
       - "pt (?:c/o|reports|endorses) HI"
       - "(?:\\+|positive) (?:for )?HI"
       - "HI (?:present|endorsed|reported|active)"
-    negation_phrases: ["don't", "no", "not", "never", "denies", "(?:\\-|negative) (?:for )?HI"]
+      - "\\bHI\\b"
+    negation_phrases: ["don't", "no", "not", "never", "denies", "\\-HI", "(?:\\-|negative) (?:for )?HI"]
     confidence: 0.93
 
   HO-002:  # Homicidal ideation - specific target (CRITICAL)
     patterns:
-      - "(?:want|going|plan(?:ning)?) to (?:kill|hurt|harm) (?:my |his |her |their )?(?:wife|husband|partner|spouse|girlfriend|boyfriend|ex|mother|father|mom|dad|boss|teacher|neighbor|roommate)"
+      - "(?:want(?:s|ed|ing)?|going|plan(?:ning)?) to (?:kill|hurt|harm) (?:my |his |her |their )?(?:wife|husband|partner|spouse|girlfriend|boyfriend|ex|mother|father|mom|dad|boss|teacher|neighbor|roommate)"
       - "(?:want|going|plan(?:ning)?) to (?:kill|hurt|harm) (?:him|her|them) (?:for|because)"
       - "(?:I'?ll|I will|I'?m going to) (?:kill|hurt|get) (?:him|her|them)"
       - "know(?:s)? where (?:he|she|they) (?:lives?|works?|goes?)"
@@ -179,7 +186,7 @@ harm_to_others:
 
   HO-003:  # Homicidal ideation - with plan (CRITICAL)
     patterns:
-      - "(?:have|has|got) (?:a )?plan to (?:kill|hurt|harm|attack)"
+      - "(?:have|has|got) (?:a )?plan to (?:kill|hurt|harm|attack|get)"
       - "know(?:s)? (?:exactly )?(?:how|when|where) (?:I'?m |I am )?going to (?:do it|get (?:him|her|them)|hurt (?:him|her|them))"
       - "(?:bought|got|have) (?:a )?(?:gun|weapon|knife) (?:for|to use on|to (?:get|hurt|kill))"
       - "(?:waiting for|planning|picking) (?:the right )?(?:time|moment|opportunity) to"
@@ -239,12 +246,12 @@ harm_to_others:
 medication:
   MED-001:  # Non-adherence - stated (MEDIUM)
     patterns:
-      - "stopped taking (?:my |the )?(?:medication|meds|pills|prescription)"
-      - "haven'?t (?:taken|been taking) (?:my |the )?(?:medication|meds)"
-      - "ran out of (?:my |the )?(?:medication|meds|prescription)"
-      - "can'?t afford (?:my |the )?(?:medication|meds|prescription)"
-      - "not taking (?:my |the )?(?:medication|meds) (?:anymore|as prescribed)"
-      - "skipping (?:my |the )?(?:medication|meds|doses)"
+      - "stopped (?:taking )?(?:my |his |her |their |the )?(?:medication|meds|pills|prescription|[A-Z][a-z]{2,})"
+      - "haven'?t (?:taken|been taking) (?:my |his |her |their |the )?(?:medication|meds)"
+      - "ran out of (?:my |his |her |their |the )?(?:medication|meds|prescription)"
+      - "can'?t afford (?:my |his |her |their |the )?(?:medication|meds|prescription)"
+      - "not taking (?:my |his |her |their |the )?(?:medication|meds) (?:anymore|as prescribed)"
+      - "skipping (?:my |his |her |their |the )?(?:medication|meds|doses)"
     clinical_shorthand:
       - "(?:med|medication) non-?adherence"
       - "non-?compliant (?:with|re:?) (?:meds|medication)"
@@ -265,7 +272,7 @@ medication:
     patterns:
       - "(?:taking|took|taken) (?:more|extra|double|triple) (?:my |the )?(?:dose|doses|medication|meds|pills)"
       - "(?:doubling|doubled) up (?:on )?(?:my |the )?(?:dose|doses|medication|meds)"
-      - "(?:saving|stockpiling|hoarding|collecting) (?:my |the )?(?:pills|medication|meds)"
+      - "(?:saving|saving up|stockpiling|hoarding|collecting) (?:my |his |her |their |the )?(?:pills|medication|meds)"
       - "(?:mixing|mix(?:ed)?) (?:my |the )?(?:medication|meds|pills) with (?:alcohol|booze|drinks?)"
       - "(?:taking|using) (?:someone else'?s|not my) (?:medication|meds|pills|prescription)"
       - "(?:crushing|snorting|injecting) (?:my |the )?(?:medication|meds|pills)"
@@ -277,9 +284,9 @@ medication:
 
   MED-004:  # Adverse reaction reported (MEDIUM)
     patterns:
-      - "(?:medication|meds|pills) (?:makes?|is making|made) (?:me |him |her |them )?(?:feel (?:sick|nauseous|dizzy|tired|drowsy|worse|terrible|awful)|sick|nauseous|dizzy)"
+      - "(?:medication|meds|pills) (?:makes?|is making|made) (?:me |him |her |them )?(?:feel (?:sick|nauseous|dizzy|tired|drowsy|worse|terrible|awful|like a zombie|numb|flat|foggy)|sick|nauseous|dizzy)"
       - "(?:having|had|getting) (?:bad |terrible |serious )?(?:side effects?|reactions?) (?:from|to|with) (?:my |the )?(?:medication|meds)"
-      - "(?:can'?t (?:sleep|eat|think|function|concentrate)|gained weight|feel(?:s|ing)? (?:numb|flat|like a zombie)) (?:since|after|from|on) (?:my |the )?(?:medication|meds)"
+      - "(?:can'?t (?:sleep|eat|think|function|concentrate)|gained weight|feel(?:s|ing)? (?:numb|flat|like a zombie|foggy)) (?:since|after|from|on) (?:my |the )?(?:medication|meds)"
       - "(?:medication|meds|pills) (?:is|are) making (?:things|it|me) worse"
     clinical_shorthand:
       - "(?:adverse|side) (?:effect|reaction) (?:reported|endorsed)"
@@ -288,7 +295,7 @@ medication:
 
   MED-005:  # Desire to discontinue (MEDIUM)
     patterns:
-      - "(?:want|going|plan(?:ning)?) to (?:stop|quit|come off|get off|discontinue) (?:my |the )?(?:medication|meds|pills)"
+      - "(?:want|going|plan(?:ning)?) to (?:stop|quit|come off|get off|discontinue) (?:taking )?(?:my |his |her |their |the )?(?:medication|meds|pills)"
       - "don'?t (?:want|need|think I need) (?:to take )?(?:my |the )?(?:medication|meds|pills) (?:anymore|any (?:longer|more))"
       - "(?:thinking|thought) (?:about|of) (?:stopping|quitting|going off) (?:my |the )?(?:medication|meds)"
       - "(?:tired|sick) of (?:taking|being on) (?:my |the )?(?:medication|meds|pills)"
@@ -308,6 +315,7 @@ substance_use:
       - "(?:use|uses|smoke|smokes|drink|drinks) (?:alcohol|weed|marijuana|pot|cannabis|meth|heroin|cocaine|crack|fentanyl|opioids?|benzos?)"
       - "(?:getting|get|been) (?:high|drunk|wasted|intoxicated) (?:regularly|often|frequently)"
       - "(?:still|currently) (?:using|drinking|smoking|getting high)"
+      - "(?:substance|alcohol|drug) (?:abuse|dependence|addiction)"
     clinical_shorthand:
       - "(?:active|current) (?:substance|alcohol|drug) (?:use|abuse)"
       - "pt (?:reports|endorses|discloses|admits) (?:substance|alcohol|drug) use"
@@ -349,12 +357,14 @@ substance_use:
   SU-004:  # Withdrawal symptoms (HIGH)
     patterns:
       - "(?:shaking|trembling|tremors?) (?:when|after|since|if) (?:I |he |she |they )?(?:don'?t|stop|haven'?t)"
+      - "(?:shaking|trembling|tremors?) and (?:sweating|nauseous|vomiting)"
       - "(?:sweating|sweats|cold sweats|night sweats) (?:when|from|since) (?:not |stopping |cutting )?(?:using|drinking)"
       - "(?:feel(?:s|ing)?|getting) (?:sick|nauseous|vomiting) (?:without|when (?:not |I don'?t ))"
       - "(?:can'?t (?:sleep|eat|sit still|stop shaking))"
       - "(?:withdrawal|withdrawing|detox(?:ing)?|going through withdrawal|in withdrawal)"
       - "(?:DTs?|delirium tremens)"
       - "(?:seizure|convulsion) (?:risk|concern|from (?:withdrawal|stopping|detox))"
+      - "haven'?t had a (?:drink|fix|hit|dose) (?:in|for) (?:\\w+ )?(?:days|hours|weeks|months|years)"
     clinical_shorthand:
       - "(?:withdrawal|w/d|detox) (?:symptoms?|s/s|present|active)"
       - "pt (?:reports|endorses|presents with) (?:withdrawal|w/d|detox) (?:symptoms?|s/s)"
@@ -364,7 +374,7 @@ substance_use:
 
   SU-005:  # Risky substance behavior (HIGH)
     patterns:
-      - "(?:mixing|mixed) (?:drugs|substances|pills|medication|meds) (?:with|and) (?:alcohol|other (?:drugs|substances|pills))"
+      - "(?:mixing|mixed) (?:my |his |her |their |the )?(?:drugs|substances|pills|medication|meds) (?:with|and) (?:alcohol|other (?:drugs|substances|pills))"
       - "(?:using|used|injecting|injected|shooting up|shot up) (?:with )?(?:a )?(?:needle|IV|intravenously)"
       - "(?:using|used|getting high|drinking) (?:alone|by myself|when no one (?:is|was) (?:around|home))"
       - "(?:drove|driving|drive) (?:while|after|when) (?:drunk|high|intoxicated|under the influence)"
@@ -388,6 +398,8 @@ clinical_deterioration:
       - "(?:nothing|things) (?:will|would|can) (?:never )?(?:get better|change|improve)"
       - "what'?s the (?:use|point)"
       - "give(?:n|ing) up"
+      - "(?:feel(?:s|ing)?|report(?:s|ing)?) (?:hopeless|hopelessness)"
+      - "(?:no point in) (?:going on|living|trying|continuing)"
     clinical_shorthand:
       - "(?:pervasive|significant|severe) hopelessness"
       - "pt (?:reports|endorses|expresses) hopelessness"
@@ -402,6 +414,9 @@ clinical_deterioration:
       - "(?:completely|totally) (?:alone|isolated|cut off|withdrawn)"
       - "(?:don'?t|won'?t) (?:leave|go out of|come out of) (?:my |the )?(?:house|room|apartment|bed)"
       - "(?:pushed|pushing|cut(?:ting)?) (?:everyone|everybody|people|friends?|family) (?:away|out)"
+      - "(?:sleeping|slept|stayed in bed) all day"
+      - "(?:lives?|living) alone"
+      - "no (?:identified )?social support(?:s)?"
       - "(?:no one|nobody) (?:calls?|texts?|visits?|checks? (?:on|in))"
     clinical_shorthand:
       - "(?:severe|significant|marked) (?:social )?(?:isolation|withdrawal)"
@@ -411,12 +426,14 @@ clinical_deterioration:
 
   CD-003:  # Sleep disruption - severe (MEDIUM)
     patterns:
-      - "(?:haven'?t|have not) slept (?:in|for) (?:days|nights|a (?:long )?while)"
-      - "(?:not |can'?t |unable to )(?:sleep|fall asleep|stay asleep) (?:at all|for days)"
+      - "(?:haven'?t|have not|hasn'?t|has not) slept (?:in|for) (?:\\w+ )?(?:days|nights|a (?:long )?while)"
+      - "(?:not |can'?t |unable to )(?:sleep(?:ing)?|fall asleep|stay asleep) (?:at all|for (?:\\w+ )?days)?"
       - "(?:sleeping|slept|in bed) (?:all day|most of the (?:day|time))"
-      - "(?:awake|up) (?:for )?(?:days|multiple nights) (?:straight|in a row)"
+      - "(?:awake|up) (?:for )?(?:\\w+ )?(?:days|nights) (?:straight|in a row)"
       - "(?:insomnia|can'?t sleep) (?:is |has )?(?:getting|gotten) (?:much |significantly )?worse"
-      - "(?:haven'?t|have not) (?:gotten out of|left) bed (?:in|for) (?:days|a while)"
+      - "(?:haven'?t|have not) (?:gotten out of|left) bed (?:in|for) (?:\\w+ )?(?:days|a while)"
+      - "(?:only |not )(?:slept|sleeping) (?:more than |less than )?(?:\\w+ )?(?:hours?|minutes?) (?:per|a|each) night"
+      - "(?:slept|sleeping) (?:less than |no more than )(?:\\w+ )?(?:hours?|minutes?) (?:per|a|each) night"
     clinical_shorthand:
       - "(?:severe|significant|marked) (?:insomnia|sleep (?:disruption|disturbance|deprivation))"
       - "(?:severe|significant) hypersomnia"
@@ -476,7 +493,7 @@ clinical_deterioration:
       - "can'?t trust (?:anyone|anybody|them|people)"
       - "(?:they|people|someone|the government) (?:is|are) (?:trying|going) to (?:get|hurt|harm|kill|poison) (?:me|him|her|them)"
       - "feel(?:s|ing)? (?:unsafe|threatened) (?:everywhere|all the time|constantly)"
-      - "(?:people|neighbors|coworkers?|family) (?:are |is )?(?:conspiring|plotting|scheming) against"
+      - "(?:people|everyone|everybody|neighbors|coworkers?|family) (?:are |is )?(?:conspiring|plotting|scheming) against"
     clinical_shorthand:
       - "paranoid ideation (?:present|endorsed|reported|active)"
       - "pt (?:c/o|reports|endorses) paranoi(?:a|d ideation)"
@@ -490,6 +507,7 @@ clinical_deterioration:
       - "(?:have|has) (?:special|supernatural|magical|divine) (?:powers?|abilities|mission|purpose)"
       - "(?:the (?:tv|television|radio|news|internet)|people on tv) (?:is|are) (?:talking|sending messages?|communicating) (?:to|about|directly to) (?:me|him|her|them)"
       - "(?:something|device|chip) (?:is )?(?:implanted|inserted|put) (?:in|inside) (?:my|his|her|their) (?:body|head|brain|arm)"
+      - "(?:implanted|inserted|put) (?:a |an )?(?:something|device|chip|tracker) (?:in|inside) (?:my|his|her|their) (?:body|head|brain|arm)"
       - "(?:thoughts?|ideas?) (?:are )?(?:being )?(?:put|inserted|planted|broadcast) (?:into|in|from) (?:my|his|her|their) (?:head|mind|brain)"
       - "(?:my|his|her|their) (?:organs?|body|insides) (?:is|are) (?:rotting|decaying|missing|being removed|not working)"
       - "(?:convinced|believes?|certain|knows?) (?:that )?(?:despite|even though|regardless)"
@@ -558,23 +576,26 @@ clinical_deterioration:
 protective_factors:
   PF-001:  # Treatment engagement (POSITIVE)
     patterns:
-      - "(?:looking forward to|engaged in|committed to) (?:therapy|treatment|sessions?)"
-      - "(?:finding|found) (?:therapy|treatment|counseling) helpful"
+      - "(?:looking forward to|engaged in|committed to) (?:therapy|treatment|sessions?|(?:next |the next )?(?:session|appointment))"
+      - "(?:finding|found) (?:therapy|treatment|counseling) (?:really |very |extremely )?helpful"
       - "want(?:s|ing)? to (?:continue|keep going with) (?:therapy|treatment)"
+      - "(?:attending|attends?) (?:all )?(?:appointments?|sessions?|groups?|treatment)"
+      - "(?:committed|commitment|express(?:es|ed|ing) commitment) to (?:continuing |ongoing )?(?:group )?(?:treatment|therapy|recovery)"
     confidence: 0.80
 
   PF-002:  # Social support (POSITIVE)
     patterns:
-      - "(?:family|friends?|partner|spouse|wife|husband|mom|dad|parents?) (?:is|are) (?:really )?(?:supportive|there for|helping|checking (?:on|in))"
+      - "(?:family|friends?|partner|spouse|wife|husband|mom|dad|parents?) (?:is|are) (?:really |very |extremely )?(?:supportive|there for|helping|checking (?:on|in))"
       - "(?:have|has) (?:good|strong|solid|great) (?:support|people|relationships?|connections?)"
       - "(?:talking|spoke|talked) to (?:my |a )?(?:friend|family member|partner|sponsor|pastor|minister)"
       - "(?:people|someone|they|family|friends?) (?:who )?(?:care(?:s)?|I can (?:call|talk to|count on|lean on|turn to))"
       - "(?:going|went) to (?:church|temple|mosque|synagogue|meeting|AA|NA|support group)"
+      - "(?:sponsor|therapist|counselor|pastor|minister) (?:has been|is) (?:really |very |extremely )?(?:supportive|helpful)"
     confidence: 0.78
 
   PF-003:  # Future orientation (POSITIVE)
     patterns:
-      - "(?:looking forward to|excited about|planning|can'?t wait for) (?:my |the |a )?(?:vacation|trip|birthday|graduation|wedding|baby|holidays?|weekend)"
+      - "(?:looking forward to|excited about|planning|can'?t wait for) (?:my |his |her |their |the |a )?(?:\\w+'?s? )?(?:vacation|trip|birthday|graduation|wedding|baby|holidays?|weekend)"
       - "(?:want(?:s|ing)?|plan(?:ning)?|going|hoping) to (?:go back to|start|finish|get) (?:school|college|work|a job|my (?:degree|GED))"
       - "(?:have|has) (?:things|reasons?|people|goals?|plans?) (?:to (?:live|stay (?:alive|around)) for|worth (?:living|staying) for)"
       - "(?:my |the )?(?:kids?|children|grandchildren|baby|family) (?:need(?:s)? me|(?:is|are) (?:my )?reason)"
@@ -594,7 +615,8 @@ protective_factors:
 
   PF-005:  # Medication adherence (POSITIVE)
     patterns:
-      - "(?:taking|been taking|take) (?:my |the )?(?:medication|meds|pills) (?:every day|as prescribed|regularly|consistently|without missing)"
+      - "(?:taking|been taking|take) (?:my |his |her |their |the )?(?:medication|meds|pills) (?:every day|as prescribed|regularly|consistently|without missing)"
+      - "(?:taking|been taking) (?:my |his |her |their |the )?(?:medications?|meds) as prescribed"
       - "(?:haven'?t|have not) missed (?:a )?(?:dose|any (?:doses?|medication|meds))"
       - "(?:medication|meds) (?:is|are) (?:helping|working|making a difference|keeping me stable)"
       - "(?:picked up|refilled|got) (?:my |the )?(?:prescription|medication|meds) (?:on time|regularly)"
