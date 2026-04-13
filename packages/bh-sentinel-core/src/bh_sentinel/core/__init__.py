@@ -2,6 +2,7 @@
 
 __version__ = "0.1.0"
 
+from bh_sentinel.core._disclaimer import CLINICAL_USE_NOTICE
 from bh_sentinel.core.emotion_lexicon import EmotionLexicon
 from bh_sentinel.core.models import (
     AnalysisConfig,
@@ -30,6 +31,7 @@ from bh_sentinel.core.temporal_detector import TemporalDetector
 
 __all__ = [
     "__version__",
+    "CLINICAL_USE_NOTICE",
     # Models
     "AnalysisConfig",
     "AnalysisContext",

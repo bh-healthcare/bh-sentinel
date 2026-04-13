@@ -204,6 +204,9 @@ cython_debug/
 # Local AI planning / superpowers (not versioned)
 docs/superpowers/
 
+# Claude Code
+CLAUDE.md
+
 # macOS
 .DS_Store
 

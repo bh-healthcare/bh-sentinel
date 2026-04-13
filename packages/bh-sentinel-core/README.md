@@ -1,6 +1,8 @@
 # bh-sentinel-core
 
-**Pattern-based clinical safety signal detection for behavioral health systems.**
+**Clinical decision support: pattern-based safety signal detection for behavioral health. Not a diagnostic tool.**
+
+> **Clinical Use Notice:** bh-sentinel is clinical decision support software. It is not a diagnostic tool, not FDA-cleared, and not a substitute for clinical judgment. All outputs are signals for clinician review. See [CLINICAL_DISCLAIMER.md](../../CLINICAL_DISCLAIMER.md).
 
 bh-sentinel-core is the foundational library of the [bh-sentinel](https://github.com/bh-healthcare/bh-sentinel) project. It provides deterministic, regex-based safety signal detection with configurable rules, negation handling, temporal awareness, and an emotion lexicon.
 
@@ -18,29 +20,29 @@ Minimal: `pydantic`, `pyyaml`. No ML libraries required.
 
 - **Pattern Matcher** -- compiled regex engine with negation and temporal awareness
 - **Rules Engine** -- configurable severity escalation, de-escalation, and compound risk detection
-- **Flag Taxonomy** -- 37 flags across 6 clinical domains (self-harm, harm to others, medication, substance use, clinical deterioration, protective factors)
+- **Flag Taxonomy** -- 40 flags across 6 clinical domains (self-harm, harm to others, medication, substance use, clinical deterioration, protective factors)
 - **Text Preprocessor** -- sentence splitting, normalization, and character offset tracking
 - **Negation Detector** -- "denies SI", "no suicidal ideation" handling
 - **Temporal Detector** -- past vs. present tense detection ("used to cut" vs. "is cutting")
-- **Emotion Lexicon** -- NRC Emotion Lexicon for word-level emotion scoring
+- **Emotion Lexicon** -- project-owned behavioral health lexicon with 11-category density scoring
 - **Pipeline** -- orchestrator that runs all layers and produces structured results
 
 ## Quick Start
 
 ```python
-from bh_sentinel.core import PatternMatcher, FlagTaxonomy
-from bh_sentinel.core.preprocessor import TextPreprocessor
+from bh_sentinel.core import Pipeline
 
-taxonomy = FlagTaxonomy.load_default()
-matcher = PatternMatcher.from_default_config()
-preprocessor = TextPreprocessor()
+pipeline = Pipeline()
+result = pipeline.analyze_sync(
+    "Patient reports suicidal ideation for the past two days. "
+    "Stopped taking my medication last week."
+)
 
-text = "Patient reports not sleeping for 3 days and states she stopped taking her Lexapro."
-preprocessed = preprocessor.process(text)
-results = matcher.analyze(preprocessed)
-
-for flag in results.flags:
+for flag in result.flags:
     print(f"[{flag.severity}] {flag.name} (confidence: {flag.confidence})")
+
+print(f"Immediate review: {result.summary.requires_immediate_review}")
+print(f"Recommended: {result.summary.recommended_action}")
 ```
 
 ## Documentation

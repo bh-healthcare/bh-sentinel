@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "bh-sentinel-core"
 version = "0.1.0"
-description = "Pattern-based clinical safety signal detection for behavioral health systems"
+description = "Clinical decision support: pattern-based safety signal detection for behavioral health. Not a diagnostic tool."
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.11"
@@ -22,7 +22,7 @@ keywords = [
     "signal-detection",
 ]
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Intended Audience :: Healthcare Industry",
     "Intended Audience :: Science/Research",
@@ -36,13 +36,14 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "pydantic>=2.0.0,<3",
-    "pyyaml>=6.0,<7",
+    "pydantic>=2.0.0,<3",    # Request/response model validation
+    "pyyaml>=6.0,<7",        # Pattern library YAML loading
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0.0,<9",
+    "pytest-asyncio>=0.21,<1",   # Async Pipeline test support
     "ruff>=0.1.0,<1",
     "mypy>=1.0.0,<2",
 ]
@@ -53,15 +54,21 @@ Documentation = "https://github.com/bh-healthcare/bh-sentinel#readme"
 Repository = "https://github.com/bh-healthcare/bh-sentinel"
 Issues = "https://github.com/bh-healthcare/bh-sentinel/issues"
 Changelog = "https://github.com/bh-healthcare/bh-sentinel/blob/main/CHANGELOG.md"
+Author = "https://tanmayakumar.com"
+
+[project.scripts]
+bh-sentinel = "bh_sentinel.cli.__main__:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/bh_sentinel"]
-only-include = ["src/bh_sentinel/core"]
+only-include = ["src/bh_sentinel/core", "src/bh_sentinel/cli"]
 
 [tool.hatch.build.targets.sdist]
 include = [
     "/src",
     "/README.md",
+    "/CHANGELOG.md",
+    "/LICENSE",
 ]
 
 [tool.hatch.build]
@@ -77,12 +84,12 @@ line-length = 100
 
 [tool.ruff.lint]
 select = [
-    "E",
-    "W",
-    "F",
-    "I",
-    "B",
-    "UP",
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "UP",     # pyupgrade
 ]
 
 [tool.mypy]
@@ -93,3 +100,4 @@ warn_unused_ignores = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+asyncio_mode = "auto"

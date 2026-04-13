@@ -105,3 +105,108 @@ def test_flag_rejects_invalid_enum_values():
             basis_description="test",
             evidence_span=EvidenceSpan(sentence_index=0, char_start=0, char_end=5),
         )
+
+
+def test_clinical_use_notice_exportable():
+    """CLINICAL_USE_NOTICE must be in __all__ and importable."""
+    from bh_sentinel.core import CLINICAL_USE_NOTICE, __all__
+
+    assert "CLINICAL_USE_NOTICE" in __all__
+    assert isinstance(CLINICAL_USE_NOTICE, str)
+    assert "not a diagnostic tool" in CLINICAL_USE_NOTICE.lower()
+    assert "not FDA-cleared" in CLINICAL_USE_NOTICE
+
+
+def test_analysis_response_includes_clinical_notice():
+    """AnalysisResponse must include clinical_use_notice field."""
+    from bh_sentinel.core import (
+        CLINICAL_USE_NOTICE,
+        AnalysisResponse,
+        AnalysisSummary,
+        PipelineStatus,
+        Severity,
+    )
+
+    response = AnalysisResponse(
+        request_id="test-123",
+        processing_time_ms=1.0,
+        taxonomy_version="1.0.0",
+        flags=[],
+        summary=AnalysisSummary(
+            max_severity=Severity.LOW,
+            total_flags=0,
+            domains_flagged=[],
+            requires_immediate_review=False,
+        ),
+        pipeline_status=PipelineStatus(),
+    )
+    assert response.clinical_use_notice == CLINICAL_USE_NOTICE
+
+
+def test_clinical_notice_in_json_serialization():
+    """clinical_use_notice must appear in JSON output."""
+    from bh_sentinel.core import (
+        AnalysisResponse,
+        AnalysisSummary,
+        PipelineStatus,
+        Severity,
+    )
+
+    response = AnalysisResponse(
+        request_id="test-123",
+        processing_time_ms=1.0,
+        taxonomy_version="1.0.0",
+        flags=[],
+        summary=AnalysisSummary(
+            max_severity=Severity.LOW,
+            total_flags=0,
+            domains_flagged=[],
+            requires_immediate_review=False,
+        ),
+        pipeline_status=PipelineStatus(),
+    )
+    json_str = response.model_dump_json()
+    assert "clinical_use_notice" in json_str
+
+
+def test_flag_has_temporal_context_field():
+    """Flag must have temporal_context field defaulting to 'present'."""
+    from bh_sentinel.core import DetectionLayer, Domain, EvidenceSpan, Flag, Severity
+
+    flag = Flag(
+        flag_id="SH-001",
+        domain=Domain.SELF_HARM,
+        name="test",
+        severity=Severity.HIGH,
+        confidence=0.9,
+        detection_layer=DetectionLayer.PATTERN_MATCH,
+        matched_context_hint="test",
+        basis_description="test",
+        evidence_span=EvidenceSpan(sentence_index=0, char_start=0, char_end=5),
+    )
+    assert flag.temporal_context == "present"
+
+    flag_past = Flag(
+        flag_id="SH-008",
+        domain=Domain.SELF_HARM,
+        name="test",
+        severity=Severity.HIGH,
+        confidence=0.9,
+        detection_layer=DetectionLayer.PATTERN_MATCH,
+        matched_context_hint="test",
+        basis_description="test",
+        evidence_span=EvidenceSpan(sentence_index=0, char_start=0, char_end=5),
+        temporal_context="past",
+    )
+    assert flag_past.temporal_context == "past"
+
+
+def test_emotion_result_has_category_scores():
+    """EmotionResult must have category_scores field."""
+    from bh_sentinel.core import EmotionResult
+
+    result = EmotionResult()
+    assert result.category_scores == {}
+
+    result_with_scores = EmotionResult(category_scores={"hopelessness": 0.3, "agitation": 0.1})
+    assert result_with_scores.category_scores["hopelessness"] == 0.3

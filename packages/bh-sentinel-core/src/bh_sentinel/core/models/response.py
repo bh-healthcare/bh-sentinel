@@ -7,6 +7,7 @@ from enum import StrEnum
 
 from pydantic import BaseModel
 
+from bh_sentinel.core._disclaimer import CLINICAL_USE_NOTICE
 from bh_sentinel.core.models.flags import Domain, Flag, LayerStatus, Severity
 
 
@@ -42,6 +43,7 @@ class EmotionResult(BaseModel):
 
     primary: str | None = None
     secondary: str | None = None
+    category_scores: dict[str, float] = {}
     comprehend_available: bool = False
     sentiment: dict | None = None
 
@@ -78,3 +80,4 @@ class AnalysisResponse(BaseModel):
     protective_factors: list[Flag] = []
     summary: AnalysisSummary
     pipeline_status: PipelineStatus
+    clinical_use_notice: str = CLINICAL_USE_NOTICE

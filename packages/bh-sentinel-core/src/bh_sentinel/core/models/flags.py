@@ -49,9 +49,9 @@ class LayerStatus(StrEnum):
 class EvidenceSpan(BaseModel):
     """Character-level evidence span pointing back to the source text."""
 
-    sentence_index: int
-    char_start: int
-    char_end: int
+    sentence_index: int = Field(ge=0)
+    char_start: int = Field(ge=0)
+    char_end: int = Field(ge=0)
 
 
 class Flag(BaseModel):
@@ -66,4 +66,5 @@ class Flag(BaseModel):
     matched_context_hint: str
     basis_description: str
     evidence_span: EvidenceSpan
+    temporal_context: str = "present"
     corroborating_layers: list[DetectionLayer] = []

@@ -1250,7 +1250,7 @@ bh-sentinel/
 │       ├── pyproject.toml
 │       └── README.md
 ├── config/
-│   ├── patterns.yaml                  # Default pattern library (~330 patterns across 40 flags)
+│   ├── patterns.yaml                  # Default pattern library (351 patterns across 40 flags)
 │   ├── rules.json                     # Default rules engine configuration
 │   ├── flag_taxonomy.json             # Versioned flag taxonomy (v1.0.0)
 │   ├── emotion_lexicon.json           # Behavioral health emotion lexicon data (project-owned)
@@ -1341,7 +1341,7 @@ Retention periods are configurable per environment via Terraform variables. Depl
 
 ### 7.6 Observability and Metrics
 
-The pipeline emits structured metrics through two channels: **bh-audit-logger** for compliance-grade event tracking, and **structured JSON log lines** for operational metrics queryable via CloudWatch Logs Insights or any log aggregation tool.
+The pipeline is designed to emit structured metrics through two channels: **bh-audit-logger** for compliance-grade event tracking (integration planned for the deployment layer in Phase 3), and **structured JSON log lines** for operational metrics queryable via CloudWatch Logs Insights or any log aggregation tool. In v0.1, the core library does not emit audit events directly — audit integration is the responsibility of the deployment boundary (Lambda handler, FastAPI middleware, etc.).
 
 **Channel 1: bh-audit-logger integration**
 
@@ -1582,7 +1582,7 @@ or surfaced in clinical ops dashboard
 
 ### 9.4 Audit Event Integration
 
-bh-sentinel can emit audit events through [bh-audit-logger](https://github.com/bh-healthcare/bh-audit-logger) for compliance tracking. Each analysis request generates an audit event recording the request_id, source, flags returned (metadata only), and processing outcome. No clinical text is included in audit events.
+bh-sentinel is designed to integrate with [bh-audit-logger](https://github.com/bh-healthcare/bh-audit-logger) for compliance tracking at the deployment boundary. The core library (`bh-sentinel-core`) does not emit audit events directly — this is the responsibility of the service layer (e.g., the Lambda handler in Phase 3). Each analysis request should generate an audit event recording the request_id, source, flags returned (metadata only), and processing outcome. No clinical text should be included in audit events.
 
 ---
 
@@ -1813,7 +1813,7 @@ No SageMaker costs. Transformer model runs in-process within the Lambda containe
 - [ ] Behavioral health emotion lexicon integration (in-process, ~2ms) — see Section 4.5 Layer 3
 - [ ] Rules engine (condition DSL, severity escalation/de-escalation, compound risk, recommended_action)
 - [ ] Pipeline orchestrator with asyncio.gather and graceful degradation
-- [ ] Draft patterns.yaml: ~330 patterns across all 40 flags and 6 domains including clinical shorthand
+- [ ] Draft patterns.yaml: 351 patterns across all 40 flags and 6 domains including clinical shorthand
 - [ ] Config validation CLI (`bh_sentinel.cli validate-config`) — see Section 3.3
 - [ ] Pattern test runner CLI (`bh_sentinel.cli test-patterns`) with clinician-readable output — see Section 10.5
 - [ ] Test fixtures (`config/test_fixtures.yaml`) covering positive, negative, negation, temporal, and multi-flag scenarios — see Section 10.5
