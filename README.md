@@ -7,7 +7,7 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
-**Status:** Core engine (v0.1) implemented. ML layer and deployment in progress. Not yet production-ready.
+**Status:** v0.2.0 shipped. `bh-sentinel-core 0.1.1` (Layer 1 + Layer 3 + Layer 4) and `bh-sentinel-ml 0.2.0` (Layer 2 zero-shot transformer) are both on PyPI. Reference AWS deployment + validated calibration land in v0.3. Not yet production-ready -- clinical validation and calibration against labeled clinical data are a v0.3 deliverable.
 
 ---
 
@@ -64,9 +64,9 @@ The machine learning layer. ONNX-based transformer inference, zero-shot classifi
 pip install bh-sentinel-ml
 ```
 
-**Dependencies:** bh-sentinel-core (auto-installed), onnxruntime, tokenizers.
+**Dependencies:** `bh-sentinel-core>=0.1.1` (auto-installed), `onnxruntime`, `tokenizers`, `huggingface_hub`, `platformdirs`.
 
-**Use this when:** You want contextual, transformer-based detection in addition to pattern matching.
+**Use this when:** You want contextual, transformer-based detection in addition to pattern matching. The `BH_SENTINEL_ML_OFFLINE=1` env var is the production rail for VPC-isolated deployments so cold starts never hit HuggingFace Hub.
 
 ## Quick Start
 
@@ -91,29 +91,48 @@ print(f"\nImmediate review: {result.summary.requires_immediate_review}")
 print(f"Recommended: {result.summary.recommended_action}")
 ```
 
-### Full Pipeline with ML (bh-sentinel-ml, v0.2 -- not yet implemented)
+### Full Pipeline with ML (v0.2)
 
 ```python
 from bh_sentinel.core import Pipeline
 
-# When bh-sentinel-ml is available, enable the transformer layer:
+# Layer 2 is opt-in. On first call the pinned DistilBART-MNLI revision
+# is auto-downloaded from HuggingFace Hub into a local cache.
 pipeline = Pipeline(
     enable_patterns=True,
-    enable_transformer=True,   # Requires bh-sentinel-ml
+    enable_transformer=True,   # requires bh-sentinel-ml
     enable_emotion_lexicon=True,
 )
 
-result = await pipeline.analyze(
+result = pipeline.analyze_sync(
     "Patient expresses feeling like a burden to her family "
     "and questions the point of continuing treatment."
 )
 
 print(f"Max severity: {result.summary.max_severity}")
 print(f"Requires immediate review: {result.summary.requires_immediate_review}")
+print(f"L2 status: {result.pipeline_status.layer_2_transformer}")
 for flag in result.flags:
+    layers = [flag.detection_layer.value, *[layer.value for layer in flag.corroborating_layers]]
     print(f"  [{flag.severity}] {flag.flag_id}: {flag.name}")
     print(f"    {flag.basis_description}")
+    print(f"    detected by: {', '.join(layers)}")
 ```
+
+### Production / VPC-isolated deployment
+
+Pre-bake the model in your container at `docker build` time so runtime stays
+fully offline (no HuggingFace Hub on cold start):
+
+```dockerfile
+RUN pip install bh-sentinel-ml
+RUN bh-sentinel-ml download-model --output /opt/bh-sentinel-ml/model \
+      --revision <PINNED_REVISION_SHA> \
+      --verify-sha256 <PINNED_ONNX_SHA256>
+ENV BH_SENTINEL_ML_OFFLINE=1
+```
+
+Then construct the pipeline against the baked-in path: `Pipeline(enable_transformer=True, transformer_model_path=Path("/opt/bh-sentinel-ml/model"), transformer_auto_download=False)`.
 
 ## Flag Taxonomy
 
@@ -292,14 +311,44 @@ The literary passages are equally important. They prove the system doesn't false
 
 The literary passages that return 0 flags are documented evidence of why Layer 2 (the transformer, Phase 2) needs to exist. Layer 1 correctly handles direct clinical language. The indirect, metaphorical, and literary constructions are exactly what semantic ML classification is designed to catch. This is the intended division of labor between the deterministic and ML layers.
 
-Full validation source: `tests/test_real_world_validation.py`
+Full L1 validation source: `packages/bh-sentinel-core/tests/test_real_world_validation.py`
+
+### What Layer 2 adds (v0.2)
+
+`bh-sentinel-ml 0.2.0` ships the full L2 inference path: sentence-level zero-shot NLI over the same flag taxonomy, candidate merge with the L1 results, and corroboration metadata on every flag. Structurally the pipeline now runs all three layers in parallel and surfaces L1-only / L2-only / corroborated detections on every request.
+
+**What L2 is designed to target on the literary corpus** (hypotheses from [`config/ml/zero_shot_hypotheses.yaml`](config/ml/zero_shot_hypotheses.yaml)):
+
+| Source | L1 baseline (v0.1) | Layer 2 target flags | What Layer 2 is testing |
+|--------|--------------------|---------------------|-------------------------|
+| Dostoevsky -- *Crime and Punishment* | CD-001 | CD-002 (severe isolation), CD-005c (paranoid ideation) | "The speaker describes withdrawing from social contact", "The speaker expresses paranoid beliefs about being watched, followed, or targeted" |
+| Woolf -- *Mrs Dalloway* | 0 flags | SH-002 (active SI, nonspecific) | "The speaker describes general thoughts about ending their own life" |
+| Gilman -- *The Yellow Wallpaper* | 0 flags | CD-003 (sleep disruption), CD-006 (dissociation) | "The speaker describes severe disruption to their sleep", "The speaker describes feeling detached from reality or from themselves" |
+| Tolstoy -- *Anna Karenina* | 0 flags | CD-001 (hopelessness), SH-001 (passive death wish), SH-002 (active SI) | "The speaker expresses pervasive hopelessness", "The speaker expresses a wish to be dead", "The speaker describes general thoughts about ending their own life" |
+
+**Quality numbers on clinical corpora are deferred to v0.3.** The architecture ships in v0.2 with `FixedDiscount(0.85)` calibration (§4.8 Phase A); validated temperature scaling against clinician-labeled data is a v0.3 deliverable. We deliberately do not publish detection-quality numbers here against DistilBART-MNLI zero-shot on literary texts because a small general-purpose NLI model is not a reliable proxy for a clinical use case, and publishing those numbers without clinical labels would misrepresent the project's readiness.
+
+**To reproduce Layer 2 results yourself:**
+
+```bash
+pip install bh-sentinel-core bh-sentinel-ml
+bh-sentinel-ml evaluate --corpus config/eval/real_world_corpus.yaml --enable-transformer
+```
+
+The shared corpus at [`config/eval/real_world_corpus.yaml`](config/eval/real_world_corpus.yaml) (public-domain literature + synthetic clinical vignettes + true negatives, with `expected_flags_hint` on each entry) is what the L1-vs-L2 diagnostic runs against. A structural integration test (`packages/bh-sentinel-ml/tests/test_l1_vs_l2_corpus.py`, marked `real_model` and skipped in default CI) writes a per-fixture report to `packages/bh-sentinel-ml/tests/artifacts/`.
+
+A future `bh-sentinel-examples` repository (see [Roadmap](#roadmap)) will host full reproducible Layer 2 evaluations against real clinical text with clinician-labeled ground truth, once that data is available.
 
 ## Repository Structure
 
 ```
 bh-sentinel/
+├── .github/workflows/
+│   ├── ci.yml                         # Lint + test matrix (Python 3.11, 3.12)
+│   ├── publish-core.yml               # Tag core-v*  → publish bh-sentinel-core
+│   └── publish-ml.yml                 # Tag ml-v*    → publish bh-sentinel-ml
 ├── packages/
-│   ├── bh-sentinel-core/              # PyPI package
+│   ├── bh-sentinel-core/              # PyPI: bh-sentinel-core (0.1.1)
 │   │   ├── src/bh_sentinel/core/
 │   │   │   ├── pattern_matcher.py     # Layer 1: compiled regex, negation, temporal
 │   │   │   ├── rules_engine.py        # Layer 4: business logic rules
@@ -308,44 +357,47 @@ bh-sentinel/
 │   │   │   ├── negation_detector.py   # "NOT suicidal" handling
 │   │   │   ├── temporal_detector.py   # Past vs present tense detection
 │   │   │   ├── emotion_lexicon.py     # Behavioral health emotion lexicon (in-process)
-│   │   │   ├── pipeline.py            # Orchestrator
+│   │   │   ├── pipeline.py            # Orchestrator (L1+L2+L3+L4, lazy-imports ml)
+│   │   │   ├── cli/                   # bh-sentinel validate-config + test-patterns
 │   │   │   └── models/                # Pydantic request/response models
 │   │   ├── pyproject.toml
 │   │   └── README.md
-│   └── bh-sentinel-ml/                # PyPI package
+│   └── bh-sentinel-ml/                # PyPI: bh-sentinel-ml (0.2.0)
 │       ├── src/bh_sentinel/ml/
-│       │   ├── transformer.py         # ONNX Runtime inference
+│       │   ├── transformer.py         # ONNX Runtime inference + SHA256 verify-on-load
 │       │   ├── zero_shot.py           # Zero-shot NLI classification
-│       │   └── export.py              # Model export tooling
+│       │   ├── calibration.py         # Calibrator protocol, FixedDiscount, TemperatureScaling, ECE
+│       │   ├── merge.py               # L1/L2 candidate merge (architecture §4.7)
+│       │   ├── model_cache.py         # HF Hub + offline cache + $BH_SENTINEL_ML_OFFLINE rail
+│       │   ├── exceptions.py          # ModelNotFoundError, ModelIntegrityError, InferenceError
+│       │   ├── _config.py             # ml_config.yaml + zero_shot_hypotheses.yaml loaders
+│       │   ├── _default_config/       # Vendored YAML configs shipped in the wheel
+│       │   └── cli/                   # bh-sentinel-ml download-model | calibrate | evaluate
 │       ├── pyproject.toml
 │       └── README.md
 ├── config/
 │   ├── patterns.yaml                  # Default pattern library (351 patterns across 40 flags)
 │   ├── rules.json                     # Default rules engine configuration
-│   ├── flag_taxonomy.json             # Versioned flag taxonomy
+│   ├── flag_taxonomy.json             # Versioned flag taxonomy (40 flags, 6 domains)
 │   ├── emotion_lexicon.json           # Behavioral health emotion lexicon data
-│   └── test_fixtures.yaml             # Pattern test fixtures (84 cases across all 40 flags)
-├── deployment/
-│   ├── aws-lambda/                    # Reference: Lambda container deployment
-│   │   ├── handler.py
-│   │   ├── Dockerfile
-│   │   └── README.md
-│   └── terraform/                     # Reference: AWS infrastructure (VPC, API GW, etc.)
-│       ├── modules/
-│       └── environments/
-├── training/
-│   ├── prepare_data.py                # Dataset preparation scripts
-│   ├── train.py                       # Fine-tuning pipeline
-│   ├── evaluate.py                    # Model evaluation harness
-│   └── export.py                      # Export to ONNX + INT8 quantization
+│   ├── test_fixtures.yaml             # Pattern test fixtures (84 cases across all 40 flags)
+│   ├── ml/
+│   │   ├── ml_config.yaml             # Model pin, SHA256, calibration strategy, batching
+│   │   └── zero_shot_hypotheses.yaml  # One NLI hypothesis per flag_id (all 40)
+│   └── eval/
+│       └── real_world_corpus.yaml     # Shared L1 vs L2 diagnostic corpus (public-domain lit + vignettes)
+├── deployment/                        # (v0.3 target: Lambda + Terraform reference)
+├── training/                          # (v0.4 target: fine-tuning pipeline)
 ├── docs/
 │   ├── architecture.md                # Full architecture document
 │   ├── flag-taxonomy.md               # Detailed flag definitions
-│   ├── deployment-guide.md            # AWS Lambda deployment walkthrough
+│   ├── deployment-guide.md            # AWS Lambda deployment walkthrough (v0.3)
 │   ├── fda-cds-analysis.md            # FDA CDS compliance analysis
-│   ├── training-guide.md              # Model fine-tuning instructions
-│   └── pattern-library.md             # Pattern authoring guide
+│   ├── training-guide.md              # Model fine-tuning instructions (v0.4)
+│   ├── pattern-library.md             # Pattern authoring guide
+│   └── release-process.md             # Per-package release procedure, PyPI Trusted Publishers
 ├── LICENSE                            # Apache 2.0
+├── CONTRIBUTING.md                    # Contribution guidelines
 ├── CONTRIBUTORS.md
 ├── CHANGELOG.md
 └── README.md                          # This file
@@ -381,6 +433,12 @@ The default transformer model uses zero-shot classification (no training data ne
 
 See `docs/training-guide.md` and the `training/` directory for the full pipeline.
 
+## Releases
+
+bh-sentinel publishes two independently-versioned PyPI packages from this monorepo. Each package has its own tag prefix: `core-v*` for `bh-sentinel-core`, `ml-v*` for `bh-sentinel-ml`. Pushing a prefixed tag triggers the corresponding publish workflow.
+
+See [`docs/release-process.md`](docs/release-process.md) for the full release procedure, PyPI Trusted Publisher setup, rollback guidance, and historical tag notes.
+
 ## FDA CDS Considerations
 
 bh-sentinel is designed to satisfy the four criteria for Non-Device Clinical Decision Support under Section 520(o)(1)(E) of the FD&C Act (21st Century Cures Act). The architecture specifically addresses Criterion 4 (clinician independent review) through the `basis_description`, `evidence_span`, and `detection_layer` fields in every flag response.
@@ -400,12 +458,15 @@ bh-sentinel is part of the [bh-healthcare](https://github.com/bh-healthcare) ope
 | [bh-audit-schema](https://github.com/bh-healthcare/bh-audit-schema) | Canonical audit event standard for behavioral health systems, with HIPAA/SOC 2/42 CFR Part 2 compliance mappings |
 | [bh-fastapi-audit](https://github.com/bh-healthcare/bh-fastapi-audit) | FastAPI middleware for compliant audit event emission |
 | [bh-audit-logger](https://github.com/bh-healthcare/bh-audit-logger) | Generic audit event emitter |
+| [bh-fastapi-examples](https://github.com/bh-healthcare/bh-fastapi-examples) | Reference FastAPI integrations for the audit ecosystem |
+| [bh-audit-logger-examples](https://github.com/bh-healthcare/bh-audit-logger-examples) | Reference integrations for `bh-audit-logger` |
+| `bh-sentinel-examples` *(v0.3)* | Reproducible local evaluations of Layers 1 + 2 with the real INT8 model pre-downloaded. Runs the shared corpus, prints per-entry L1-only / L2-only / corroborated flags, lets clinicians or partners validate detection behavior on their own workstations without touching the bh-sentinel core package tests. |
 
-bh-sentinel is designed to integrate with bh-audit-logger for compliance tracking at the deployment boundary. The core library does not emit audit events directly -- this is the responsibility of the service layer (Phase 3).
+bh-sentinel is designed to integrate with bh-audit-logger for compliance tracking at the deployment boundary. The core library does not emit audit events directly -- this is the responsibility of the service layer (v0.3).
 
 ## Roadmap
 
-### Current (v0.1) -- complete
+### v0.1 -- complete
 - [x] Core pattern matching engine with negation and temporal detection
 - [x] Flag taxonomy v1.0 (40 flags across 6 domains)
 - [x] Rules engine with configurable severity escalation
@@ -413,16 +474,28 @@ bh-sentinel is designed to integrate with bh-audit-logger for compliance trackin
 - [x] Behavioral health emotion lexicon integration
 - [x] Default pattern library (351 patterns across 40 flags)
 
-### Next (v0.2)
-- [ ] ONNX transformer inference layer (bh-sentinel-ml)
-- [ ] Zero-shot classification with DistilBART-MNLI
-- [ ] Model evaluation harness with ground truth fixtures
-- [ ] AWS Lambda reference deployment
-- [ ] Terraform modules for VPC + API Gateway
+### v0.2 -- complete
+- [x] `bh-sentinel-ml` package: ONNX transformer inference layer, in-process
+- [x] Zero-shot classification with DistilBART-MNLI baseline
+- [x] L1/L2 candidate merge (`merge_candidates`, architecture §4.7)
+- [x] Hybrid model distribution: HF Hub auto-download + `BH_SENTINEL_ML_OFFLINE=1` rail + SHA256 verify-on-load
+- [x] Calibration mechanism: `FixedDiscount` (Phase A default) + `TemperatureScaling` (ready, unvalidated)
+- [x] CLI: `download-model`, `calibrate`, `evaluate`
+- [x] Shared L1-vs-L2 diagnostic corpus at `config/eval/real_world_corpus.yaml`
+- [x] Per-package release workflows (`core-v*` / `ml-v*`)
+- [x] `bh-sentinel-core 0.1.1` and `bh-sentinel-ml 0.2.0` on PyPI
 
-### Future
-- [ ] Fine-tuning pipeline with public dataset preparation
-- [ ] Spanish language pattern support
+### Next (v0.3) -- deployment + validated calibration
+- [ ] `bh-sentinel-examples` companion repository (see [ecosystem](#relationship-to-bh-healthcare)): reproducible local Layer 2 eval against real clinical corpora with the pinned INT8 model pre-downloaded
+- [ ] AWS Lambda reference deployment (Dockerfile, handler.py wired to the pre-baked model)
+- [ ] Terraform modules (VPC, Lambda, API Gateway, ECR, S3, monitoring, rate limiting)
+- [ ] CloudWatch dashboard + alarms (per-layer latency, error rate, Comprehend fallback rate)
+- [ ] Validated `TemperatureScaling` calibration with ECE < 0.05 on clinician-labeled data
+- [ ] Model evaluation harness against clinician-labeled ground truth
+
+### Future (v0.4+)
+- [ ] Fine-tuning pipeline with public dataset preparation (`training/`)
+- [ ] Spanish language pattern support + multilingual transformer
 - [ ] Flag trend analysis utilities
 - [ ] Clinician feedback integration (dismissed flags feed back into training)
 - [ ] FHIR-compatible output format

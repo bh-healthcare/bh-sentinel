@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "bh-sentinel-core"
-version = "0.1.0"
+version = "0.1.1"
 description = "Clinical decision support: pattern-based safety signal detection for behavioral health. Not a diagnostic tool."
 readme = "README.md"
 license = "Apache-2.0"
@@ -42,9 +42,9 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.0.0,<9",
+    "pytest>=8,<9",              # Test runner; compat-release; >=8 required by pytest-asyncio 1.x
     "pytest-asyncio>=0.21,<1",   # Async Pipeline test support
-    "ruff>=0.1.0,<1",
+    "ruff>=0.1.0,<1",            # Lint + format; 0.x cadence
     "mypy>=1.0.0,<2",
 ]
 

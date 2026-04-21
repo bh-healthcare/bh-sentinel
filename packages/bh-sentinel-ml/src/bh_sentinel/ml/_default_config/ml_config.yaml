@@ -1,0 +1,55 @@
+# bh-sentinel-ml configuration
+# Canonical source. The vendored copy at
+# packages/bh-sentinel-ml/src/bh_sentinel/ml/_default_config/ml_config.yaml
+# must stay byte-identical -- CI test_config_vendored.py enforces this.
+
+# HuggingFace Hub model repo for the zero-shot NLI baseline.
+# DistilBART-MNLI is a small, widely-used Phase A baseline. Phase B
+# replaces this with a fine-tuned clinical model per docs/architecture.md.
+model_repo: valhalla/distilbart-mnli-12-3
+
+# Pinned revision SHA from HuggingFace Hub. Production cannot use `main`
+# because the upstream model can change silently. Update this (and
+# model_sha256 below) together when bumping the model version.
+#
+# TODO(bh-sentinel-ml 0.2.1): replace with the pinned revision + SHA
+# once a canonical ONNX export is published. See the "Release note"
+# section in packages/bh-sentinel-ml/README.md and the
+# bh-sentinel-examples repo for the reproduction flow. Until then
+# the default auto-download path will fail the verify-on-load SHA
+# check; operators must use the BH_SENTINEL_ML_OFFLINE=1 rail with
+# their own locally-pinned export.
+model_revision: main
+
+# ONNX filename inside the HF repo or the local cache directory.
+onnx_filename: model_int8.onnx
+
+# SHA256 of the ONNX bytes. TransformerClassifier verifies this at load
+# time to catch stale/tampered container bakes. All-zeros here is a
+# placeholder for development only; Phase 2 replaces it with the real
+# digest of the exported INT8 model.
+model_sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+
+# Max tokens per sentence for NLI batching. DistilBART handles 512 but
+# clinical sentences rarely exceed ~200 tokens; 256 keeps the tensor
+# allocations predictable.
+max_sentence_length: 256
+
+# Max (sentence, hypothesis) pairs in a single ONNX forward pass. Larger
+# batches improve throughput but raise peak memory. 32 is a safe middle
+# ground for CPU inference.
+max_batch_size: 32
+
+# Per-flag confidence floor. Layer 2 candidates below this threshold are
+# dropped before the merge (architecture section 4.5, Layer 2). The
+# merge (section 4.7) takes max(L1, L2), so a candidate that clears this
+# threshold can still lose to L1 on the final flag record.
+min_emit_confidence: 0.55
+
+# Confidence calibration for Layer 2 softmax outputs.
+# Phase A (v0.2): fixed_discount with factor 0.85 per architecture
+# section 4.8. Phase B (v0.3): temperature_scaling once labeled clinical
+# data is available.
+calibration:
+  strategy: fixed_discount
+  discount: 0.85

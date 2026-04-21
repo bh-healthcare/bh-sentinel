@@ -1,0 +1,210 @@
+# Real-world validation corpus for bh-sentinel.
+#
+# Public-domain literary excerpts + synthetic clinical vignettes + true
+# negatives -- intentionally consolidated into a single file.
+#
+# The v0.2 plan originally proposed a separate `clinical_vignettes.yaml`
+# alongside this one. During execution we folded the vignettes in here
+# and added a `category:` field per entry (literature / clinical_vignette
+# / true_negative) so readers can slice by kind without juggling two
+# files. One canonical corpus file is simpler to keep byte-identical
+# between the main repo and bh-sentinel-examples. Additional synthetic
+# intake fixtures that don't belong in the shared corpus live alongside
+# the consumer (e.g. bh-sentinel-examples/data/clinical_fixtures/).
+#
+# Used by:
+#   - bh-sentinel-core/tests/test_real_world_validation.py (L1-only baseline)
+#   - bh-sentinel-ml/tests/test_l1_vs_l2_corpus.py (L1 vs L2 diagnostic)
+#   - bh-sentinel-examples for reproducible real-model evaluations
+#
+# Rules for entries:
+# - All text must be public-domain OR synthetic (no real clinical notes)
+# - source + year fields document the literary provenance
+# - category: one of "literature", "clinical_vignette", "true_negative"
+# - expected_flags_hint is a SOFT list -- flags we'd plausibly hope a
+#   detector surfaces. Not asserted in the ml diagnostic (too noisy for
+#   hard assertions without labeled ground truth), but shown in the
+#   per-fixture report to surface gaps.
+
+fixtures:
+  - id: woolf_mrs_dalloway
+    source: Virginia Woolf, Mrs. Dalloway
+    year: 1925
+    public_domain: true
+    category: literature
+    expected_flags_hint: [SH-002]
+    notes: >-
+      Septimus Warren Smith's internal monologue. Literary style: conditional
+      mood, indirect construction. Documents the boundary of L1 pattern
+      matching; L2 semantic classification is designed to catch these signals.
+    text: >-
+      He would kill himself rather than let them get at him. He did not want
+      to die. Life was good. The sun hot. Only human beings -- what did they
+      want? He could not feel anything. Every power poured its treasures on
+      his head, and his hand lay there on the back of the sofa, as he had
+      seen his hand lie when he was bathing, floating, on the top of the
+      waves, while far away on shore he heard dogs barking and barking far
+      away. Fear no more, says the heart in the body; fear no more. He did
+      not want to die. He was not afraid.
+
+  - id: gilman_yellow_wallpaper
+    source: Charlotte Perkins Gilman, The Yellow Wallpaper
+    year: 1892
+    public_domain: true
+    category: literature
+    expected_flags_hint: [CD-003, CD-006]
+    notes: >-
+      Describes clinical deterioration (sleep disruption, dissociation, mood
+      lability) through metaphor and period-specific language.
+    text: >-
+      I don't sleep much at night, for it is so interesting to watch
+      developments; but I sleep a good deal in the daytime. In the daytime
+      it is tiresome and perplexing. I cry at nothing, and cry most of the
+      time. It is getting to be a great effort for me to think straight.
+      I am getting angry enough to do something desperate. I sometimes
+      fancy that in my condition if I had less opposition and more society
+      and stimulus -- but John says the very worst thing I can do is to
+      think about my condition.
+
+  - id: tolstoy_anna_karenina
+    source: Leo Tolstoy, Anna Karenina
+    year: 1878
+    public_domain: true
+    category: literature
+    expected_flags_hint: [CD-001, SH-001, SH-002]
+    notes: >-
+      Levin's existential crisis -- passive ideation and explicit references
+      to suicide in philosophical construction. Classic boundary case:
+      'keeping myself from suicide with a rope' is not a clinical disclosure
+      pattern.
+    text: >-
+      Without knowing what I am and why I am here, life is impossible. And
+      that I cannot know, so I cannot live. In infinite time, in infinite
+      matter, in infinite space, is formed a bubble organism, and that bubble
+      lasts a while and bursts, and that bubble is me. I was keeping myself
+      from suicide with a rope, so as not to hang myself. And I could not
+      stop thinking about it.
+
+  - id: dostoevsky_crime_punishment
+    source: Fyodor Dostoevsky, Crime and Punishment
+    year: 1866
+    public_domain: true
+    category: literature
+    expected_flags_hint: [CD-002, CD-005c]
+    notes: >-
+      Raskolnikov's deterioration -- isolation, paranoid ideation, avoidance.
+      Subtle signals that exercise the semantic layer rather than patterns.
+    text: >-
+      He had become so completely absorbed in himself, and isolated from his
+      fellows that he dreaded meeting, not only his landlady, but anyone at
+      all. He was crushed by poverty, but the anxieties of his position had
+      of late ceased to weigh upon him. He had given up attending to matters
+      of practical importance. He was not afraid of any landlady. But to be
+      stopped on the stairs, to be forced to listen to her idle, persistent
+      chatter, all that whining about what he owed, threats, complaints,
+      and to have to think up excuses, to prevaricate -- no, rather he
+      would creep down the stairs like a cat and slip out unseen.
+
+  - id: vignette_crisis_intake
+    source: synthetic
+    year: 2026
+    public_domain: true
+    category: clinical_vignette
+    expected_flags_hint:
+      [SH-004, SH-008, CD-003, MED-002, SU-001, SU-003, CD-005a, CD-002]
+    notes: High-acuity PHP intake, multi-domain, immediate review expected.
+    text: >-
+      32 yo female presents to PHP intake. Reports she has not been sleeping
+      for three days and stopped taking her Seroquel two weeks ago because
+      she couldn't afford the copay. Endorses active suicidal ideation with
+      a vague plan but denies intent to act. History of one prior attempt
+      by overdose in 2021. Reports drinking heavily since losing her job
+      last month, approximately a pint of vodka daily. Hearing voices
+      intermittently that tell her she is worthless. No identified social
+      supports. Lives alone with her two cats.
+
+  - id: vignette_routine_session
+    source: synthetic
+    year: 2026
+    public_domain: true
+    category: clinical_vignette
+    expected_flags_hint: [PF-001, PF-002, PF-004, PF-005]
+    notes: Stable routine session. Protective factors dominate.
+    text: >-
+      45 yo male seen for individual therapy. Mood is euthymic today.
+      Reports sleeping seven hours per night. Taking medications as
+      prescribed and finds the current regimen helpful. Attended all three
+      group sessions this week and reports finding the DBT skills group
+      particularly useful. His wife has been very supportive. He used
+      breathing exercises when he felt anxious yesterday and it helped.
+      Looking forward to his son's baseball game this weekend. Denies any
+      suicidal or homicidal ideation. No psychotic symptoms.
+
+  - id: vignette_mixed_presentation
+    source: synthetic
+    year: 2026
+    public_domain: true
+    category: clinical_vignette
+    expected_flags_hint: [CD-001, CD-002, PF-001, PF-002]
+    notes: Mixed risk + protective factors in a nonbinary patient.
+    text: >-
+      28 yo nonbinary patient seen for crisis follow-up. They report the
+      suicidal thoughts have decreased since starting Lexapro but still
+      feel hopeless about their situation at home. They haven't left the
+      house in five days. Their partner has been checking in daily which
+      they find helpful. They expressed commitment to continuing therapy.
+      Reports using the crisis line twice this week when feeling
+      overwhelmed. Denies any plan or intent.
+
+  - id: vignette_journal_entry
+    source: synthetic
+    year: 2026
+    public_domain: true
+    category: clinical_vignette
+    expected_flags_hint: [SH-001, CD-001, MED-002, CD-002, CD-004, PF-001]
+    notes: First-person journal -- passive ideation, med non-adherence, isolation.
+    text: >-
+      I can't do this anymore. Everything feels pointless and I'm so tired
+      of pretending I'm okay. I stopped taking my meds because what's the
+      point. Mom keeps calling but I don't pick up. Haven't eaten in two
+      days. The only thing keeping me going is my dog. I have therapy
+      tomorrow and I'm going to be honest about how bad things have gotten.
+
+  - id: true_negative_weather
+    source: synthetic
+    year: 2026
+    public_domain: true
+    category: true_negative
+    expected_flags_hint: []
+    notes: Weather text. Must produce zero flags.
+    text: >-
+      The forecast calls for sunny skies this weekend with temperatures
+      reaching the mid-seventies. Perfect weather for the farmers market
+      on Saturday. Don't forget your sunscreen and a reusable bag for
+      produce.
+
+  - id: true_negative_recipe
+    source: synthetic
+    year: 2026
+    public_domain: true
+    category: true_negative
+    expected_flags_hint: []
+    notes: Recipe text. Must produce zero flags.
+    text: >-
+      Preheat oven to 375 degrees. Mix flour, sugar, and butter until
+      crumbly. Press into a 9-inch pan and bake for 12 minutes. Let cool
+      completely before adding the cream cheese filling. Refrigerate for
+      at least 2 hours.
+
+  - id: true_negative_sports
+    source: synthetic
+    year: 2026
+    public_domain: true
+    category: true_negative
+    expected_flags_hint: []
+    notes: Sports recap. Must produce zero flags.
+    text: >-
+      The team rallied in the fourth quarter with a stunning 14-point
+      comeback. The quarterback threw for 340 yards and three touchdowns.
+      The defense held strong in the final minutes, sealing the victory
+      31-28.

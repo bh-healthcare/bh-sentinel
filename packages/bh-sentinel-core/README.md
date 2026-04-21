@@ -45,9 +45,31 @@ print(f"Immediate review: {result.summary.requires_immediate_review}")
 print(f"Recommended: {result.summary.recommended_action}")
 ```
 
+## Adding the ML Layer
+
+For semantic classification on top of pattern matching, install the
+companion [`bh-sentinel-ml`](https://pypi.org/project/bh-sentinel-ml/)
+package and enable Layer 2:
+
+```bash
+pip install bh-sentinel-ml
+```
+
+```python
+from bh_sentinel.core import Pipeline
+
+pipeline = Pipeline(enable_transformer=True)  # auto-downloads pinned model on first run
+```
+
+`bh-sentinel-core` remains installable and usable on its own -- it has no
+runtime dependency on `onnxruntime`, `tokenizers`, or `huggingface_hub`.
+The ml imports are lazy-loaded only when `enable_transformer=True`.
+
 ## Documentation
 
-See the [main repository](https://github.com/bh-healthcare/bh-sentinel) for full documentation, architecture details, and the flag taxonomy reference.
+See the [main repository](https://github.com/bh-healthcare/bh-sentinel)
+for full documentation, architecture details, flag taxonomy reference,
+and the [release process](../../docs/release-process.md).
 
 ## License
 

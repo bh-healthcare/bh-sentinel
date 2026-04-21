@@ -1,7 +1,13 @@
-bh-sentinel-core>=0.1.0,<1
-bh-sentinel-ml>=0.1.0,<1
-pydantic>=2.0.0,<3
-pyyaml>=6.0,<7
-onnxruntime>=1.16.0,<2
-tokenizers>=0.15.0,<1
-boto3>=1.28.0,<2
+# Reference Lambda runtime requirements.
+#
+# Pins track bh-sentinel-core 0.1.1 (Pipeline L2 kwargs) and
+# bh-sentinel-ml 0.2.0 (first publication with Layer 2 transformer).
+# Bump in lockstep with the packages' CHANGELOG entries.
+
+bh-sentinel-core>=0.1.1,<1   # Pipeline + Flag model + rules engine
+bh-sentinel-ml>=0.2.0,<1     # Layer 2 zero-shot transformer
+pydantic>=2.0.0,<3           # Request/response model validation
+pyyaml>=6.0,<7               # YAML config loaders (patterns, hypotheses, ml_config)
+onnxruntime>=1.16.0,<2       # In-process transformer inference
+tokenizers>=0.15.0,<1        # HF tokenizers for NLI encoding
+boto3>=1.28.0,<2             # AWS client (Comprehend, CloudWatch metrics)

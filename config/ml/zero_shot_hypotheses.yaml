@@ -1,0 +1,63 @@
+# Zero-shot NLI hypothesis templates, one per flag_id.
+# The zero-shot classifier treats each sentence as the NLI premise and
+# each template below as the candidate hypothesis. The entailment
+# probability becomes the per-flag confidence before calibration.
+#
+# Rules:
+#   - exactly one hypothesis per flag_id
+#   - every flag_id in config/flag_taxonomy.json MUST have an entry
+#     (no gaps; no orphans). CI test_hypotheses.py enforces this.
+#   - use plain, clinical, declarative phrasing. Avoid jargon or quoted
+#     phrases, which NLI models can latch onto as surface cues.
+
+# Self-Harm and Suicidal Ideation
+SH-001: The speaker expresses a wish to be dead or to not wake up.
+SH-002: The speaker describes general thoughts about ending their own life.
+SH-003: The speaker describes thoughts about ending their life with a specific method.
+SH-004: The speaker expresses some intent to act on thoughts of suicide.
+SH-005: The speaker has a specific plan to end their life and intent to act on it.
+SH-006: The speaker describes taking preparatory actions for a suicide attempt.
+SH-007: The speaker describes deliberately injuring themselves without intending suicide.
+SH-008: The speaker references a past suicide attempt.
+
+# Harm to Others
+HO-001: The speaker expresses general thoughts of harming another person.
+HO-002: The speaker expresses thoughts of harming a specific named or identifiable person.
+HO-003: The speaker describes a specific plan to harm another person.
+HO-004: The speaker describes urges to be physically violent.
+HO-005: The speaker admits to perpetrating abuse or violence against another person.
+HO-006: The speaker discloses being the victim of abuse or violence.
+
+# Medication Non-Adherence
+MED-001: The speaker explicitly states that they are not taking a prescribed medication.
+MED-002: The speaker implies they have stopped, run out of, or cannot afford a prescribed medication.
+MED-003: The speaker describes taking more medication than prescribed or stockpiling pills.
+MED-004: The speaker reports side effects or an adverse reaction to a medication.
+MED-005: The speaker expresses a desire to stop taking a prescribed medication.
+
+# Substance Use
+SU-001: The speaker discloses current use of alcohol or other substances.
+SU-002: The speaker describes returning to substance use after a period of sobriety.
+SU-003: The speaker describes an increase in frequency or amount of substance use.
+SU-004: The speaker describes experiencing substance withdrawal symptoms.
+SU-005: The speaker describes risky substance use behavior such as mixing substances, using alone, or injecting.
+
+# Clinical Deterioration
+CD-001: The speaker expresses pervasive hopelessness that nothing will improve.
+CD-002: The speaker describes withdrawing from social contact and isolating themselves.
+CD-003: The speaker describes severe disruption to their sleep, such as not sleeping for days or sleeping excessively.
+CD-004: The speaker describes severe disruption to their appetite, such as not eating for days or binge-purge behavior.
+CD-005a: The speaker describes hearing voices or auditory hallucinations that others do not hear.
+CD-005b: The speaker describes seeing things that others do not see.
+CD-005c: The speaker expresses paranoid beliefs about being watched, followed, or targeted without evidence.
+CD-005d: The speaker expresses fixed false beliefs that are resistant to counter-evidence.
+CD-006: The speaker describes feeling detached from reality or from themselves.
+CD-007: The speaker describes severe panic or acute anxiety that is impairing function.
+CD-008: The speaker describes symptoms of mania such as grandiosity, decreased need for sleep, racing thoughts, or risky behavior.
+
+# Protective Factors
+PF-001: The speaker expresses commitment to their treatment or therapy.
+PF-002: The speaker mentions supportive relationships or social support.
+PF-003: The speaker describes making plans for the future or setting goals.
+PF-004: The speaker describes actively using coping strategies they have been taught.
+PF-005: The speaker describes consistently taking their medication as prescribed.

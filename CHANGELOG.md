@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Planned for `bh-sentinel-ml 0.2.1`
+
+- Pin a canonical ONNX export of the zero-shot baseline model with a real `model_revision` SHA and matching `model_sha256` in `config/ml/ml_config.yaml` (the v0.2.0 values are placeholders; production `auto_download=True` currently fails the verify-on-load SHA check as a result).
+- Ship a `scripts/export_onnx.py` helper for users who want to re-export locally against a different base model.
+- Publish the first reproducible L1-vs-L2 evaluation report against the shared corpus via the [bh-sentinel-examples](https://github.com/bh-healthcare/bh-sentinel-examples) repo.
+
+See the Release note in [`packages/bh-sentinel-ml/README.md`](packages/bh-sentinel-ml/README.md) for the current operator workaround (use the `BH_SENTINEL_ML_OFFLINE=1` rail with a locally-exported model).
+
+## [ml-0.2.0] - 2026-04-17
+
+First release of `bh-sentinel-ml` as a Layer 2 add-on to `bh-sentinel-core`.
+
+### Added
+
+- **`bh-sentinel-ml` package** published to PyPI with the hybrid model-distribution strategy: auto-download from HuggingFace Hub by default, explicit `model_path` override for containers, and the `BH_SENTINEL_ML_OFFLINE=1` production safety rail
+- `TransformerClassifier` -- ONNX Runtime wrapper with verify-on-load SHA256 integrity check (mismatched bytes fail pipeline construction before any inference session is created)
+- `ZeroShotClassifier` -- NLI-based per-flag zero-shot classifier that emits `PatternMatchCandidate` compatible with core's `RulesEngine`
+- `Calibrator` protocol plus `FixedDiscount(0.85)` (Phase A default per architecture §4.8), `TemperatureScaling` with LBFGS-free ternary-search fit, and `compute_ece` helper
+- `merge_candidates` implementing architecture §4.7 exactly: max-confidence dedup, L1-preferred evidence span, corroboration metadata, present-wins temporal merge
+- `bh-sentinel-ml` CLI with three subcommands: `download-model` (container pre-bake with `--verify-sha256`), `calibrate` (TemperatureScaling fit + ECE), `evaluate` (per-fixture L1/L2 diagnostic)
+- Shared real-world corpus at [`config/eval/real_world_corpus.yaml`](config/eval/real_world_corpus.yaml) -- Woolf, Gilman, Tolstoy, Dostoevsky, synthetic vignettes, true negatives. Wired into a diagnostic test that produces a side-by-side L1 vs L2 report
+- Two new publish workflows ([`publish-core.yml`](.github/workflows/publish-core.yml), [`publish-ml.yml`](.github/workflows/publish-ml.yml)) with per-package tag prefixes (`core-v*` / `ml-v*`) and CI-enforced tag/pyproject version agreement
+- [`docs/release-process.md`](docs/release-process.md) -- full release procedure, PyPI Trusted Publisher setup, rollback guidance
+
+### Compatibility
+
+- `bh-sentinel-ml` requires `bh-sentinel-core>=0.1.1`
+- Calibration is Phase A only: ECE numbers are not production-meaningful until v0.3 ships clinical labels. The mechanism is complete; validation is deferred
+
+## [0.1.1] - 2026-04-17
+
+### Added
+
+- `Pipeline` gains `transformer_model_path` and `transformer_auto_download` kwargs. Both have safe defaults; existing callers continue to work untouched
+- L1/L2 candidate merge path in the pipeline (lazy-imported only when `enable_transformer=True`), including corroboration metadata hydration onto `Flag.corroborating_layers`
+- `PipelineStatus.layer_2_transformer` is now set to `COMPLETED` / `FAILED` / `SKIPPED` based on actual L2 execution
+- Graceful degradation: L2 failures (model missing, SHA mismatch, inference error) never propagate -- the pipeline returns a 200-shaped response with L1+L3+L4 populated and L2 marked `FAILED`
+
+### Compatibility
+
+- Fully backward-compatible with v0.1.0. New kwargs are opt-in and default to the pre-0.1.1 behavior
+- Existing `Pipeline(enable_transformer=False)` path makes zero additional imports -- the `bh-sentinel-core` package remains zero-dep on `onnxruntime` / `tokenizers` / `huggingface_hub`
+
 ## [0.1.0] - 2026-04-12
 
 ### Added
@@ -48,5 +91,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   CD-005a (auditory hallucinations), CD-005b (visual hallucinations),
   CD-005c (paranoid ideation), CD-005d (delusional thinking)
 
-[Unreleased]: https://github.com/bh-healthcare/bh-sentinel/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/bh-healthcare/bh-sentinel/compare/ml-v0.2.0...HEAD
+[ml-0.2.0]: https://github.com/bh-healthcare/bh-sentinel/releases/tag/ml-v0.2.0
+[0.1.1]: https://github.com/bh-healthcare/bh-sentinel/compare/v0.1.0...core-v0.1.1
 [0.1.0]: https://github.com/bh-healthcare/bh-sentinel/releases/tag/v0.1.0
