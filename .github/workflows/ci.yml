@@ -26,7 +26,23 @@ jobs:
           ruff format --check packages/ training/ deployment/aws-lambda/handler.py
 
       - name: Verify vendored config matches source
-        run: diff -r config/ packages/bh-sentinel-core/src/bh_sentinel/core/_default_config/
+        # config/ is the single source of truth. Each package vendors only the
+        # subset it needs:
+        #   - bh-sentinel-core: top-level JSON/YAML (taxonomy, patterns, rules,
+        #     emotion lexicon, test fixtures)
+        #   - bh-sentinel-ml:   config/ml/ (ml_config.yaml + hypotheses)
+        # config/eval/ is a shared corpus used by ml tests and bh-sentinel-examples;
+        # it is not vendored into either wheel and is excluded from both diffs.
+        # No ${{ ... }} interpolation -- all args are repo-relative literals.
+        run: |
+          diff -r \
+            --exclude=eval \
+            --exclude=ml \
+            config/ \
+            packages/bh-sentinel-core/src/bh_sentinel/core/_default_config/
+          diff -r \
+            config/ml/ \
+            packages/bh-sentinel-ml/src/bh_sentinel/ml/_default_config/
 
   test:
     runs-on: ubuntu-latest
