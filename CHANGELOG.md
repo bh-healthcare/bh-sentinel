@@ -7,11 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-
-- `bh-sentinel-ml` now performs a runtime `bh-sentinel-core` version check at import time. If the installed `bh-sentinel-core` is older than `0.1.1` (or missing entirely), `import bh_sentinel.ml` raises `ImportError` with an actionable upgrade message. Catches `--no-deps`, vendored, and editable-monorepo installs that bypass pip's resolver; pip's install-time constraint remains the primary guard.
-- `packages/bh-sentinel-ml/README.md` gains an explicit **Compatibility** section (version matrix + install-time vs import-time enforcement notes), mirroring the existing CHANGELOG entry.
-
 ### Planned for `bh-sentinel-ml 0.2.1`
 
 - Pin a canonical ONNX export of the zero-shot baseline model with a real `model_revision` SHA and matching `model_sha256` in `config/ml/ml_config.yaml` (the v0.2.0 values are placeholders; production `auto_download=True` currently fails the verify-on-load SHA check as a result).
@@ -35,6 +30,8 @@ First release of `bh-sentinel-ml` as a Layer 2 add-on to `bh-sentinel-core`.
 - Shared real-world corpus at [`config/eval/real_world_corpus.yaml`](config/eval/real_world_corpus.yaml) -- Woolf, Gilman, Tolstoy, Dostoevsky, synthetic vignettes, true negatives. Wired into a diagnostic test that produces a side-by-side L1 vs L2 report
 - Two new publish workflows ([`publish-core.yml`](.github/workflows/publish-core.yml), [`publish-ml.yml`](.github/workflows/publish-ml.yml)) with per-package tag prefixes (`core-v*` / `ml-v*`) and CI-enforced tag/pyproject version agreement
 - [`docs/release-process.md`](docs/release-process.md) -- full release procedure, PyPI Trusted Publisher setup, rollback guidance
+- Runtime `bh-sentinel-core` version check in `bh_sentinel.ml.__init__`: if the installed core is older than `0.1.1` (or missing), `import bh_sentinel.ml` raises `ImportError` with an actionable upgrade message. Catches `--no-deps`, vendored, and editable-monorepo installs that bypass pip's resolver; pip's install-time constraint remains the primary guard.
+- Explicit **Compatibility** section in [`packages/bh-sentinel-ml/README.md`](packages/bh-sentinel-ml/README.md) (version matrix + install-time vs import-time enforcement notes), surfaced on the PyPI project page as part of the long description.
 
 ### Compatibility
 
