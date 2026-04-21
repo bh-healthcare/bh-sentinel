@@ -1,6 +1,6 @@
 """bh-sentinel-core: Pattern-based clinical safety signal detection."""
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 from bh_sentinel.core._disclaimer import CLINICAL_USE_NOTICE
 from bh_sentinel.core.emotion_lexicon import EmotionLexicon

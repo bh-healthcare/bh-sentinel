@@ -38,6 +38,21 @@ make test
 - Use clear, descriptive commit messages
 - Reference issue numbers where applicable
 
+### Releasing
+
+See [docs/release-process.md](docs/release-process.md) for the full release
+workflow, including the per-package tag scheme (`core-v*` vs `ml-v*`), the
+one-time PyPI Trusted Publisher setup, and rollback guidance.
+
+Short version: releases are triggered by pushing prefixed annotated tags.
+Publish `bh-sentinel-core` before `bh-sentinel-ml` when the latter's
+dependency pin changes.
+
+```bash
+git tag -a core-v0.1.1 -m "bh-sentinel-core 0.1.1: ..."
+git push origin core-v0.1.1
+```
+
 ## Clinical Detection Logic Changes
 
 **All contributions that modify clinical detection logic require clinician review

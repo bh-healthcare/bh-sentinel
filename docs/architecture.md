@@ -1,9 +1,9 @@
 # bh-sentinel: Architecture & Research Document
 
 **Author:** Tanmaya Kumar  
-**Date:** April 01, 2026  
-**Version:** 1.0  
-**Status:** Architecture complete. Core implementation in progress.
+**Date:** April 01, 2026 (last updated: April 17, 2026)  
+**Version:** 1.1  
+**Status:** `bh-sentinel-core` 0.1.1 and `bh-sentinel-ml` 0.2.0 implemented. Layer 2 ONNX model pinning follows in `bh-sentinel-ml` 0.2.1; AWS Lambda reference deployment and validated clinical calibration land in v0.3.
 
 ---
 
@@ -579,7 +579,7 @@ harm_to_others:
     confidence: 0.93
 ```
 
-**Pattern library sizing:** The 40 flags across 6 domains, combined with negation variants, temporal variants, colloquial language variants ("what's the point anymore" vs "suicidal ideation"), and clinical shorthand (e.g., "pt c/o SI", "denies HI"), require approximately 150-200 patterns in production. The current library contains 231 patterns + 98 clinical shorthand entries = 329 total.
+**Pattern library sizing:** The 40 flags across 6 domains, combined with negation variants, temporal variants, colloquial language variants ("what's the point anymore" vs "suicidal ideation"), and clinical shorthand (e.g., "pt c/o SI", "denies HI"), require approximately 150-200 patterns in production. The current library contains 250 patterns + 101 clinical shorthand entries = 351 total, matching the count cited in [`README.md`](../README.md) and [`CHANGELOG.md`](../CHANGELOG.md).
 
 Clinical teams should be able to add/modify patterns without code deployment (patterns.yaml is a configuration file, not code).
 
@@ -1678,7 +1678,7 @@ Config Validation
 ✓ Flag ID integrity: 5/5 rule flag_ids found in taxonomy
 ✓ Domain consistency: 6/6 pattern domains match taxonomy
 ✓ CRITICAL coverage: 7/7 CRITICAL flags have patterns
-✓ Regex compilation: 329/329 patterns compile successfully
+✓ Regex compilation: 351/351 patterns compile successfully
 ✓ Vendored copy sync: config/ matches _default_config/
 
 All checks passed.
@@ -1825,29 +1825,39 @@ No SageMaker costs. Transformer model runs in-process within the Lambda containe
 - [ ] CI pipeline (lint, type-check, test, config validation)
 - [ ] Publish bh-sentinel-core v0.1.0 to PyPI
 
-### v0.2: ML Layer + Reference Deployment
+### v0.2: ML Layer (shipped as `bh-sentinel-ml 0.2.0` + `bh-sentinel-core 0.1.1`)
 
-- [ ] bh-sentinel-ml package scaffolding
-- [ ] ONNX transformer inference layer (in-process, no network hop)
-- [ ] Zero-shot classification with DistilBART-MNLI (also test BiomedBERT-NLI)
-- [ ] Model export tooling (PyTorch to ONNX INT8, scripts/export_onnx.py)
-- [ ] Transformer evidence_span generation (sentence-level classification → sentence boundaries as span) — required for Criterion 4
-- [ ] Transformer basis_description generation — required for Criterion 4
-- [ ] Transformer confidence calibration (temperature scaling on validation set, interim discount factor for Phase A) — see Section 4.8
-- [ ] Flag deduplication and layer merge implementation — see Section 4.7
+- [x] `bh-sentinel-ml` package scaffolding
+- [x] ONNX transformer inference layer (in-process, no network hop) via `TransformerClassifier`
+- [x] Zero-shot classification with DistilBART-MNLI baseline (hypothesis templates in `config/ml/zero_shot_hypotheses.yaml`)
+- [x] Hybrid model distribution: auto-download default + `BH_SENTINEL_ML_OFFLINE=1` production rail + SHA256 verify-on-load
+- [x] Transformer evidence_span generation (sentence-level winner span) — required for Criterion 4
+- [x] Transformer basis_description generation (static template, PHI-safe) — required for Criterion 4
+- [x] Transformer confidence calibration mechanism: `FixedDiscount(0.85)` as the Phase A default per §4.8, plus a fully-implemented `TemperatureScaling` strategy (validation against clinical data deferred to v0.3)
+- [x] Flag deduplication and L1/L2 layer merge per §4.7 (`merge_candidates`)
+- [x] Pipeline integration: lazy-imported L2 path, `asyncio.gather` over L1+L2+L3, `corroborating_layers` hydration, graceful degradation on any L2 failure
+- [x] Shared open-domain eval corpus at `config/eval/real_world_corpus.yaml` plus an L1 vs L2 diagnostic test
+- [x] CLI: `bh-sentinel-ml download-model` (container pre-bake with `--verify-sha256`), `calibrate`, `evaluate`
+- [x] Per-package PyPI release workflows (`core-v*` / `ml-v*` tag prefixes) with tag/pyproject version verification gate
+- [x] Publish `bh-sentinel-ml 0.2.0` and `bh-sentinel-core 0.1.1` to PyPI
+
+### v0.3: Reference Deployment, Fine-Tuning, Evaluation, Spanish
+
+Moved out of v0.2 to keep the ML package release tight. All items below remain outstanding:
+
 - [ ] AWS Comprehend integration (VPC endpoint, optional, 200ms timeout, graceful fallback)
-- [ ] Model evaluation harness with ground truth fixtures (also used for calibration validation, ECE < 0.05)
-- [ ] AWS Lambda reference deployment (Dockerfile, handler.py)
+- [ ] AWS Lambda reference deployment (Dockerfile, handler.py wired to the pre-baked model)
 - [ ] Terraform modules (VPC, Lambda, API Gateway, ECR, S3, monitoring, rate limiting)
 - [ ] CloudWatch dashboard (request volume, latency percentiles, per-layer breakdown, CRITICAL flag volume, error rates) — see Section 7.6
 - [ ] CloudWatch alarms (p99 latency, layer error rate, Comprehend fallback rate, zero-traffic) — see Section 7.6
-- [ ] End-to-end integration tests
-- [ ] Latency tests (p99 < 500ms warm)
+- [ ] End-to-end integration tests against the deployed Lambda
+- [ ] Latency tests (p99 < 500ms warm) with the real INT8 model loaded
 - [ ] Load tests (100 concurrent requests)
 - [ ] VPC Flow Log audit (no outbound traffic leaves VPC)
-- [ ] Publish bh-sentinel-ml v0.1.0 to PyPI
+- [ ] Model evaluation harness against clinician-labeled ground truth
+- [ ] Validated temperature-scaling calibration with ECE < 0.05 on the validation set
 
-### v0.3: Fine-Tuning, Evaluation, and Spanish Language Support
+### v0.4: Fine-Tuning, Evaluation, and Spanish Language Support
 
 - [ ] Public dataset preparation scripts (C-SSRS Reddit, SMHD, Kaggle Mental Health)
 - [ ] Domain adaptation pre-training on Reddit mental health corpora

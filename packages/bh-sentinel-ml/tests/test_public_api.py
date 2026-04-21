@@ -7,7 +7,7 @@ def test_version_exists():
     from bh_sentinel.ml import __version__
 
     assert isinstance(__version__, str)
-    assert __version__ == "0.1.0"
+    assert __version__ == "0.2.0"
 
 
 def test_all_exists():
@@ -19,14 +19,33 @@ def test_all_exists():
 
 def test_classes_importable():
     from bh_sentinel.ml import (
+        Calibrator,
+        FixedDiscount,
+        InferenceError,
+        MergeResult,
+        ModelIntegrityError,
+        ModelNotFoundError,
+        TemperatureScaling,
         TransformerClassifier,
         ZeroShotClassifier,
-        export_to_onnx,
+        compute_ece,
+        merge_candidates,
+        resolve_model_path,
     )
 
     assert callable(TransformerClassifier)
     assert callable(ZeroShotClassifier)
-    assert callable(export_to_onnx)
+    assert callable(FixedDiscount)
+    assert callable(TemperatureScaling)
+    assert callable(compute_ece)
+    assert callable(merge_candidates)
+    assert callable(resolve_model_path)
+    # Exception classes + Protocol + dataclass
+    assert issubclass(InferenceError, RuntimeError)
+    assert issubclass(ModelIntegrityError, ValueError)
+    assert issubclass(ModelNotFoundError, FileNotFoundError)
+    assert Calibrator is not None
+    assert MergeResult is not None
 
 
 def test_all_exports_are_importable():
