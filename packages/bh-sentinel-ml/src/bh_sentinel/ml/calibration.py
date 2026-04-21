@@ -44,7 +44,8 @@ class Calibrator(Protocol):
     state mutation, no network, no file I/O at call time.
     """
 
-    def calibrate(self, logits: np.ndarray) -> np.ndarray: ...
+    def calibrate(self, logits: np.ndarray) -> np.ndarray:
+        """Calibrate raw logits to per-class probabilities. See class docstring."""
 
 
 def softmax(logits: np.ndarray, axis: int = -1) -> np.ndarray:

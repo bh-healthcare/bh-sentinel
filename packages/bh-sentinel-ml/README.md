@@ -20,6 +20,19 @@ Optional extras:
 pip install "bh-sentinel-ml[eval]"   # adds numpy + scikit-learn for calibrate/evaluate CLIs
 ```
 
+## Compatibility
+
+| `bh-sentinel-ml` | Requires `bh-sentinel-core` | Python |
+|---|---|---|
+| `0.2.x` | `>=0.1.1,<1` | `>=3.11` |
+
+`bh-sentinel-ml 0.2.0` depends on the `Pipeline(transformer_model_path=..., transformer_auto_download=...)` kwargs that were added in `bh-sentinel-core 0.1.1`. Pairing it with `bh-sentinel-core 0.1.0` will break at import/construction time.
+
+Enforcement:
+
+- **Install time:** `pip install bh-sentinel-ml` resolves `bh-sentinel-core>=0.1.1,<1` from the wheel metadata. This is the primary guard.
+- **Import time:** `import bh_sentinel.ml` verifies the installed `bh-sentinel-core` version via `importlib.metadata` and raises `ImportError` with an actionable upgrade message if it's too old. This catches the `--no-deps`, vendored, and editable-monorepo cases that bypass the pip resolver.
+
 ## Quick Start
 
 ```python
