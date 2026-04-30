@@ -1,5 +1,7 @@
 # bh-sentinel-core
 
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/bh-sentinel-core?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/bh-sentinel-core)
+
 **Clinical decision support: pattern-based safety signal detection for behavioral health. Not a diagnostic tool.**
 
 > **Clinical Use Notice:** bh-sentinel is clinical decision support software. It is not a diagnostic tool, not FDA-cleared, and not a substitute for clinical judgment. All outputs are signals for clinician review. See [CLINICAL_DISCLAIMER.md](../../CLINICAL_DISCLAIMER.md).

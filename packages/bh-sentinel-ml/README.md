@@ -1,5 +1,7 @@
 # bh-sentinel-ml
 
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/bh-sentinel-ml?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/bh-sentinel-ml)
+
 **Transformer-based clinical safety signal detection for behavioral health systems.**
 
 `bh-sentinel-ml` is the Layer 2 add-on for [`bh-sentinel-core`](https://pypi.org/project/bh-sentinel-core/). It runs ONNX-Runtime zero-shot NLI inference over clinical sentences to catch signals that deterministic pattern matching misses: implied distress, indirect language, contextual meaning.

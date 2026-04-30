@@ -6,6 +6,8 @@
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![PyPI Downloads — bh-sentinel-core](https://static.pepy.tech/personalized-badge/bh-sentinel-core?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/bh-sentinel-core)
+[![PyPI Downloads — bh-sentinel-ml](https://static.pepy.tech/personalized-badge/bh-sentinel-ml?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/bh-sentinel-ml)
 
 **Status:** v0.2.0 shipped. `bh-sentinel-core 0.1.1` (Layer 1 + Layer 3 + Layer 4) and `bh-sentinel-ml 0.2.0` (Layer 2 zero-shot transformer) are both on PyPI. Reference AWS deployment + validated calibration land in v0.3. Not yet production-ready -- clinical validation and calibration against labeled clinical data are a v0.3 deliverable.
 
