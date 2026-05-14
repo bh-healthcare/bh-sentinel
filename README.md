@@ -339,7 +339,7 @@ bh-sentinel-ml evaluate --corpus config/eval/real_world_corpus.yaml --enable-tra
 
 The shared corpus at [`config/eval/real_world_corpus.yaml`](config/eval/real_world_corpus.yaml) (public-domain literature + synthetic clinical vignettes + true negatives, with `expected_flags_hint` on each entry) is what the L1-vs-L2 diagnostic runs against. A structural integration test (`packages/bh-sentinel-ml/tests/test_l1_vs_l2_corpus.py`, marked `real_model` and skipped in default CI) writes a per-fixture report to `packages/bh-sentinel-ml/tests/artifacts/`.
 
-A future `bh-sentinel-examples` repository (see [Roadmap](#roadmap)) will host full reproducible Layer 2 evaluations against real clinical text with clinician-labeled ground truth, once that data is available.
+The [`bh-sentinel-examples`](https://github.com/bh-healthcare/bh-sentinel-examples) companion repository hosts a reproducible local L1-vs-L2 evaluation against the shared corpus; see [`reports/sample_l1_vs_l2.md`](https://github.com/bh-healthcare/bh-sentinel-examples/blob/main/reports/sample_l1_vs_l2.md) for the v0.2.2 real-model run, including an honest "Observed vs designed" section that documents where the Phase A baseline falls short on subtle / metaphorical / period-specific literary text (a documented limitation tracked for Phase B in v0.3). Full reproducible Layer 2 evaluations against real clinical text with clinician-labeled ground truth are part of the Phase B / v0.3 deliverable, once that data is available.
 
 ## Repository Structure
 

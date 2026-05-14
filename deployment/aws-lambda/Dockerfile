@@ -23,8 +23,14 @@ FROM public.ecr.aws/lambda/python:3.11
 COPY requirements.txt ${LAMBDA_TASK_ROOT}/
 RUN pip install --no-cache-dir -r requirements.txt
 
-# ONNX model baked into image — no runtime download
-# (model directory populated by scripts/export_onnx.py in v0.2)
+# ONNX model baked into image — no runtime download from HF at cold-start.
+# In a real build, populate /opt/models/ at image build time via:
+#   RUN bh-sentinel-ml download-model \
+#       --revision <PINNED_HF_COMMIT_SHA from bh-sentinel/config/ml/ml_config.yaml> \
+#       --output /opt/models/ \
+#       --verify-sha256 <PINNED_MODEL_SHA256 from bh-sentinel/config/ml/ml_config.yaml>
+# Then set BH_SENTINEL_ML_OFFLINE=1 and pass transformer_model_path=Path("/opt/models")
+# to Pipeline(...). See packages/bh-sentinel-ml/README.md "Production safety rails".
 # COPY models/ /opt/models/
 
 # Configs baked into image (rarely change, version-coupled to taxonomy)
