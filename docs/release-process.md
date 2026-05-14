@@ -55,6 +55,7 @@ Run this checklist before pushing any release tag. CI enforces most of it, but t
 - [ ] `ruff check` and `ruff format --check` clean across both packages
 - [ ] Full core test suite green (`pytest packages/bh-sentinel-core/tests/`)
 - [ ] Full ml test suite green (`pytest packages/bh-sentinel-ml/tests/`)
+- [ ] **Real-model L2 smoke test green** (`pytest -m real_model packages/bh-sentinel-ml/tests/test_pinned_artifact_l2_inference.py`). Mandatory before every `ml-v*` tag -- catches the v0.2.1-style "L2 silently fails for every request" regression that default CI cannot detect because it uses a synthetic ONNX fixture with built-in symbolic axes.
 - [ ] Banned-string grep returns zero hits — run the regex documented in [`.cursor/rules/no-real-org-names.mdc`](../.cursor/rules/no-real-org-names.mdc) across the working tree
 - [ ] `python -m build packages/<package>/` succeeds locally
 - [ ] Clean-venv smoke install of the locally-built wheel works end-to-end

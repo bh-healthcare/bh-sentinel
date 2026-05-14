@@ -3,24 +3,25 @@
 # packages/bh-sentinel-ml/src/bh_sentinel/ml/_default_config/ml_config.yaml
 # must stay byte-identical -- CI test_config_vendored.py enforces this.
 
-# HuggingFace Hub model repo for the zero-shot NLI baseline. v0.2.1 pins
-# a quantized ONNX export of facebook/bart-large-mnli, hosted under the
-# bh-healthcare HF organization. See docs/ml-artifact-provenance.md for
-# the full provenance chain (source revision, license verification gate,
-# why the original valhalla/distilbart-mnli-12-3 candidate was rejected).
-# The repo name retains the historical "distilbart" prefix for URL
-# stability -- the actual source is bart-large-mnli per the provenance doc.
+# HuggingFace Hub model repo for the zero-shot NLI baseline. v0.2.2 pins
+# a quantized ONNX export of FacebookAI/roberta-large-mnli, hosted under
+# the bh-healthcare HF organization. See docs/ml-artifact-provenance.md
+# for the full provenance chain (source revision, license verification
+# gate, why facebook/bart-large-mnli was rejected at the v0.2.2 hotfix
+# pass -- encoder-decoder + INT8 dynamic quantization collapses
+# discrimination -- and why the original valhalla/distilbart-mnli-12-3
+# candidate was rejected at the v0.2.1 license verification gate).
 #
 # Phase B (v0.3+) replaces this baseline with a fine-tuned clinical model
 # per docs/architecture.md.
-model_repo: bh-healthcare/distilbart-mnli-12-3-int8-onnx
+model_repo: bh-healthcare/roberta-large-mnli-int8-onnx
 
 # Pinned revision SHA from HuggingFace Hub. Production cannot use `main`
 # because the upstream model can change silently. Update this (and
 # model_sha256 below) together when re-pinning -- see the re-pinning
 # workflow in docs/ml-artifact-provenance.md, and use scripts/export_onnx.py
 # to produce the new artifact.
-model_revision: ef4a3a8e5dea3746000aa8a73fe5f1617a9289df
+model_revision: 69eb03178c210deceb076f0a8302bc5705179a58
 
 # ONNX filename inside the HF repo or the local cache directory.
 onnx_filename: model_int8.onnx
@@ -29,9 +30,9 @@ onnx_filename: model_int8.onnx
 # time to catch stale/tampered container bakes. Computed by
 # scripts/export_onnx.py at export time and pinned here in lockstep with
 # model_revision above.
-model_sha256: "1536ec8e38136b25b4a77286d83cafe95e7d48992d24a2e4c9b0dfb162b25dd0"
+model_sha256: "49fa5562da7f1422525e88fd1145d2d06ca93b17c335adf3c4696a30908c91de"
 
-# Max tokens per sentence for NLI batching. BART-large handles 1024 but
+# Max tokens per sentence for NLI batching. RoBERTa-large handles 512 but
 # clinical sentences rarely exceed ~200 tokens; 256 keeps the tensor
 # allocations predictable.
 max_sentence_length: 256

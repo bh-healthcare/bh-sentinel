@@ -3,7 +3,7 @@
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as _pkg_version
 
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 
 _MIN_CORE_VERSION: tuple[int, int, int] = (0, 1, 1)
 """Minimum bh-sentinel-core release that exposes the Pipeline kwargs bh-sentinel-ml depends on."""

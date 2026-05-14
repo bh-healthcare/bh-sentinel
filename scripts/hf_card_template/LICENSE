@@ -3,23 +3,24 @@ MIT License
 Copyright (c) 2019-present, Facebook AI Research (Meta Platforms, Inc.)
 Copyright (c) 2026-present, bh-healthcare (https://github.com/bh-healthcare)
 
-The original BART model architecture and pre-trained weights are the work of
-Facebook AI Research (now Meta AI), published in:
+The original RoBERTa model architecture and pre-trained weights are the work
+of Facebook AI Research (now Meta AI), published in:
 
-  Lewis, M., Liu, Y., Goyal, N., Ghazvininejad, M., Mohamed, A., Levy, O.,
-  Stoyanov, V., & Zettlemoyer, L. (2019). BART: Denoising Sequence-to-Sequence
-  Pre-training for Natural Language Generation, Translation, and Comprehension.
-  arXiv preprint arXiv:1910.13461. https://arxiv.org/abs/1910.13461
+  Liu, Y., Ott, M., Goyal, N., Du, J., Joshi, M., Chen, D., Levy, O., Lewis, M.,
+  Zettlemoyer, L., & Stoyanov, V. (2019). RoBERTa: A Robustly Optimized BERT
+  Pretraining Approach. arXiv preprint arXiv:1907.11692.
+  https://arxiv.org/abs/1907.11692
 
-The MNLI fine-tune (`facebook/bart-large-mnli`) is published by Facebook AI
-Research at https://huggingface.co/facebook/bart-large-mnli under the MIT
-license (declared via the model card YAML front-matter `license: mit`).
+The MNLI fine-tune (`FacebookAI/roberta-large-mnli`) is published by Facebook
+AI Research at https://huggingface.co/FacebookAI/roberta-large-mnli under the
+MIT license (declared via the model card YAML front-matter `license: mit`).
 
-This artifact (`bh-healthcare/distilbart-mnli-12-3-int8-onnx`) is an ONNX
-export of `facebook/bart-large-mnli` with INT8 dynamic quantization applied
-via the `onnxruntime.quantization.quantize_dynamic` tool. The architecture,
-weights, and behavior are derived from and substantially identical to the
-upstream source. See README.md in this repository for full provenance.
+This artifact (`bh-healthcare/roberta-large-mnli-int8-onnx`) is an ONNX export
+of `FacebookAI/roberta-large-mnli` with INT8 dynamic quantization applied via
+the `onnxruntime.quantization.quantize_dynamic` tool with per-channel scales.
+The architecture, weights, and behavior are derived from and substantially
+identical to the upstream source. See README.md in this repository for full
+provenance.
 
 ----------------------------------------------------------------------------
 

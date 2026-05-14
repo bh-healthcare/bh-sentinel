@@ -72,11 +72,11 @@ def test_parse_args_requires_source_revision() -> None:
         module._parse_args([])  # missing --source-revision
 
 
-def test_parse_args_defaults_to_bart_large_mnli() -> None:
-    """Default source must match the v0.2.1 pinned source (per provenance doc)."""
+def test_parse_args_defaults_to_roberta_large_mnli() -> None:
+    """Default source must match the v0.2.2 pinned source (per provenance doc)."""
     module = _load_export_module()
     args = module._parse_args(["--source-revision", "deadbeef"])
-    assert args.source_model == "facebook/bart-large-mnli"
+    assert args.source_model == "FacebookAI/roberta-large-mnli"
     assert args.onnx_filename == "model_int8.onnx"
     assert args.task == "zero-shot-classification"
 
@@ -132,6 +132,56 @@ def test_validate_onnx_io_contract_rejects_extra_input(
 
     module = _load_export_module()
     with pytest.raises(SystemExit, match="unexpected extra inputs"):
+        module._validate_onnx_io_contract(bad_path)
+
+
+def test_validate_onnx_io_contract_rejects_static_input_axes(
+    tmp_path: Path,
+) -> None:
+    """ONNX with fixed (non-symbolic) input dims must be rejected.
+
+    Regression guard for the static-axes bug that shipped in v0.2.1: passing
+    `no_dynamic_axes=True` to optimum bakes example batch/seq dims into the
+    graph. At inference the runtime then rejects any tensor whose dims
+    differ from the baked-in example.
+    """
+    import numpy as np
+    import onnx
+    from onnx import TensorProto, helper, numpy_helper
+
+    # Both inputs have FIXED dims (dim_value, no dim_param). This is the bug.
+    input_ids = helper.make_tensor_value_info("input_ids", TensorProto.INT64, [2, 16])
+    attention_mask = helper.make_tensor_value_info("attention_mask", TensorProto.INT64, [2, 16])
+    logits_out = helper.make_tensor_value_info("logits", TensorProto.FLOAT, [2, 3])
+    weight = np.array([[0.1, 0.05, -0.05]], dtype=np.float32)
+    weight_init = numpy_helper.from_array(weight, name="W")
+    axes_init = numpy_helper.from_array(np.array([1], dtype=np.int64), name="reduce_axes")
+
+    cast_mask = helper.make_node(
+        "Cast", inputs=["attention_mask"], outputs=["mask_f"], to=TensorProto.FLOAT
+    )
+    reduce_sum = helper.make_node(
+        "ReduceSum",
+        inputs=["mask_f", "reduce_axes"],
+        outputs=["sum_per_row"],
+        keepdims=1,
+    )
+    matmul = helper.make_node("MatMul", inputs=["sum_per_row", "W"], outputs=["logits"])
+    graph = helper.make_graph(
+        nodes=[cast_mask, reduce_sum, matmul],
+        name="static_axes_bug",
+        inputs=[input_ids, attention_mask],
+        outputs=[logits_out],
+        initializer=[weight_init, axes_init],
+    )
+    opset = helper.make_opsetid("", 13)
+    model = helper.make_model(graph, opset_imports=[opset])
+    model.ir_version = 7
+    bad_path = tmp_path / "static_axes.onnx"
+    onnx.save(model, str(bad_path))
+
+    module = _load_export_module()
+    with pytest.raises(SystemExit, match="fixed .non-symbolic. dimension"):
         module._validate_onnx_io_contract(bad_path)
 
 

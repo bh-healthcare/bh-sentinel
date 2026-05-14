@@ -53,8 +53,15 @@ class ZeroShotClassifier:
             internally via entailment scoring.
         min_emit_confidence: calibrated-probability floor to emit a candidate.
         entailment_index: index in the logits array that represents
-            "entailment" (default 0 matches BART-large-MNLI's class order
-            and the distilbart-mnli family it was distilled into).
+            "entailment". Default 2 matches `FacebookAI/roberta-large-mnli`'s
+            class ordering (id2label = {0: CONTRADICTION, 1: NEUTRAL,
+            2: ENTAILMENT}), which is the model pinned in `ml_config.yaml`
+            for `bh-sentinel-ml >= 0.2.2`. The same default also works for
+            other HuggingFace NLI heads in the BART/RoBERTa family (BART-
+            large-MNLI uses identical class order). Override only if you
+            pin a model whose head uses a different class order, e.g. the
+            rejected `valhalla/distilbart-mnli-12-3` used entailment at
+            index 0; shipping that source would require entailment_index=0.
     """
 
     def __init__(
@@ -66,7 +73,7 @@ class ZeroShotClassifier:
         calibrator: Any,
         temporal: TemporalDetector,
         min_emit_confidence: float = 0.55,
-        entailment_index: int = 0,
+        entailment_index: int = 2,
     ) -> None:
         self._transformer = transformer
         self._taxonomy = taxonomy

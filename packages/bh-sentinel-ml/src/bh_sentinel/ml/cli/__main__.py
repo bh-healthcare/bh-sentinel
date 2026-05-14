@@ -52,7 +52,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     dl.add_argument(
         "--repo",
-        default="bh-healthcare/distilbart-mnli-12-3-int8-onnx",
+        default="bh-healthcare/roberta-large-mnli-int8-onnx",
         help="HF Hub repo id (default matches ml_config.yaml default).",
     )
     dl.add_argument(

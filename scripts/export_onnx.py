@@ -102,10 +102,15 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser.add_argument(
         "--source-model",
         required=False,
-        default="facebook/bart-large-mnli",
+        default="FacebookAI/roberta-large-mnli",
         help=(
             "HuggingFace Hub repo id of the source NLI model. Default is the "
-            "v0.2.1 pinned source. See docs/ml-artifact-provenance.md."
+            "v0.2.2 pinned source -- encoder-only RoBERTa-large fine-tuned on "
+            "MNLI. See docs/ml-artifact-provenance.md for the licensing chain "
+            "and the rationale for choosing this source (encoder-only models "
+            "quantize cleanly under INT8; encoder-decoder models like "
+            "facebook/bart-large-mnli do not, hence the v0.2.1 -> v0.2.2 "
+            "source switch)."
         ),
     )
     parser.add_argument(
@@ -280,6 +285,15 @@ def _run_optimum_export(
         ) from exc
 
     try:
+        # NOTE: no_dynamic_axes MUST stay False (or unset). Passing
+        # no_dynamic_axes=True bakes the example batch/seq dimensions
+        # into the ONNX graph as fixed values, which then crashes
+        # `TransformerClassifier._infer_batch` at runtime when the
+        # actual batch+seq don't match the export-time example. This
+        # bug shipped briefly in v0.2.1 and was caught by the corpus
+        # report generation -- see CHANGELOG.md [ml-0.2.2] Fixed.
+        # _validate_onnx_io_contract() below now enforces this guard
+        # at export time so the regression can't silently recur.
         main_export(
             model_name_or_path=source_model,
             output=str(out_dir),
@@ -287,7 +301,6 @@ def _run_optimum_export(
             framework="pt",
             revision=revision,
             cache_dir=str(cache_dir) if cache_dir else None,
-            no_dynamic_axes=True,
         )
     except TypeError as exc:
         # Optimum 2.x sometimes raises TypeError on certain (transformers,
@@ -341,13 +354,22 @@ def _validate_onnx_io_contract(onnx_path: Path) -> None:
     shape contract and packages/bh-sentinel-core/src/bh_sentinel/core/pipeline.py
     line 226 onward) requires:
 
-        Inputs:  input_ids       [batch, seq]
-                 attention_mask  [batch, seq]
-        Output:  logits          [batch, 3]
+        Inputs:  input_ids       int64, [batch, seq]    -- BOTH dims symbolic
+                 attention_mask  int64, [batch, seq]    -- BOTH dims symbolic
+        Output:  logits          float, [batch, 3]      -- batch symbolic
+
+    "Symbolic" means the ONNX graph carries the dim as a named parameter
+    (dim_param) rather than a fixed integer (dim_value). Fixed dimensions
+    are valid ONNX but they make the runtime reject any batch or sequence
+    length that doesn't match the export-time example. This is exactly
+    the static-axes bug that shipped briefly in bh-sentinel-ml 0.2.1
+    (CHANGELOG.md [ml-0.2.2] Fixed).
     """
     import onnx as _onnx
 
     model = _onnx.load(str(onnx_path), load_external_data=False)
+
+    # ---- Input names ------------------------------------------------------
     actual_inputs = {i.name for i in model.graph.input}
     extra = actual_inputs - EXPECTED_INPUT_NAMES
     missing = EXPECTED_INPUT_NAMES - actual_inputs
@@ -365,28 +387,69 @@ def _validate_onnx_io_contract(onnx_path: Path) -> None:
             "--task, or add the extra inputs as fixed initializers in the ONNX graph."
         )
 
+    # ---- Input dims must be symbolic (the static-axes regression guard) ---
+    inputs_by_name = {i.name: i for i in model.graph.input}
+    for name in sorted(EXPECTED_INPUT_NAMES):
+        dims = list(inputs_by_name[name].type.tensor_type.shape.dim)
+        if len(dims) != 2:
+            raise SystemExit(
+                f"ONNX input {name} rank mismatch: expected 2 ([batch, seq]), "
+                f"got {len(dims)}."
+            )
+        fixed = [
+            (i, d.dim_value)
+            for i, d in enumerate(dims)
+            if d.HasField("dim_value") and not d.HasField("dim_param")
+        ]
+        if fixed:
+            fixed_str = ", ".join(f"axis {i}={v}" for i, v in fixed)
+            raise SystemExit(
+                f"ONNX input {name} has fixed (non-symbolic) dimension(s): "
+                f"{fixed_str}. TransformerClassifier feeds batches of varying "
+                f"(N, seq_len), so all axes must be symbolic.\n\n"
+                "This is the same bug that shipped briefly in v0.2.1: "
+                "passing `no_dynamic_axes=True` to optimum bakes example "
+                "dims into the graph. Re-export WITHOUT that flag.\n\n"
+                "Recovery: re-run scripts/export_onnx.py against a clean "
+                "output dir (the optimum default is dynamic axes; this "
+                "script no longer overrides that default)."
+            )
+
+    # ---- Output 0 = MNLI logits with 3 classes ----------------------------
     outputs = list(model.graph.output)
     if not outputs:
         raise SystemExit(f"ONNX {onnx_path.name} has no outputs.")
-    # Output 0 is the classification logits per HF convention.
     out0 = outputs[0]
-    dims = list(out0.type.tensor_type.shape.dim)
-    if len(dims) != 2:
+    out_dims = list(out0.type.tensor_type.shape.dim)
+    if len(out_dims) != 2:
         raise SystemExit(
-            f"ONNX output 0 rank mismatch: expected 2 (batch, classes), got {len(dims)}. "
-            f"Output name: {out0.name}, shape: {dims}."
+            f"ONNX output 0 rank mismatch: expected 2 (batch, classes), got {len(out_dims)}. "
+            f"Output name: {out0.name}, shape: {out_dims}."
         )
-    classes_dim = dims[1]
+    classes_dim = out_dims[1]
     classes_value = classes_dim.dim_value if classes_dim.HasField("dim_value") else None
     if classes_value not in (None, 0, EXPECTED_OUTPUT_LOGIT_DIM):
-        # dim_value == 0 OR HasField=False both mean "symbolic"; both are fine.
         raise SystemExit(
             f"ONNX output 0 class dim is {classes_value}, expected "
             f"{EXPECTED_OUTPUT_LOGIT_DIM} (entailment, neutral, contradiction). "
             "This source model does not produce MNLI-shaped logits."
         )
+
+    # Pretty-print the verified contract for the operator.
+    def _dim_summary(name: str) -> str:
+        dims = list(inputs_by_name[name].type.tensor_type.shape.dim)
+        return (
+            "["
+            + ", ".join(
+                (d.dim_param or "?") if d.HasField("dim_param") else str(d.dim_value)
+                for d in dims
+            )
+            + "]"
+        )
+
     print(
-        f"      Contract OK: inputs={sorted(actual_inputs)}, "
+        f"      Contract OK: input_ids={_dim_summary('input_ids')}, "
+        f"attention_mask={_dim_summary('attention_mask')}, "
         f"output={out0.name}, classes={classes_value or 'symbolic'}"
     )
 
@@ -399,6 +462,15 @@ def _quantize_dynamic_int8(fp32_onnx: Path, int8_onnx: Path) -> dict[str, str]:
     well-covered by the default and adding speculative op types (e.g.
     'Attention', which isn't a standard ONNX op until very recent opsets)
     can cause silent failures.
+
+    `per_channel=True` is critical for large transformer models. Per-tensor
+    quantization (`per_channel=False`) uses one scale per weight tensor; for
+    BART-large's wide attention-layer value ranges this loses too much
+    resolution and collapses the model's classification head into near-uniform
+    output. v0.2.2's initial re-export hit this exact bug -- FP32 export was
+    correct, INT8 with per_channel=False produced uniform-ish logits across
+    all inputs. Per-channel quantization (one scale per output channel) costs
+    a small amount of file-size (~5-10%) but preserves discrimination.
 
     Returns the version strings used, for inclusion in manifest.json.
     """
@@ -413,7 +485,7 @@ def _quantize_dynamic_int8(fp32_onnx: Path, int8_onnx: Path) -> dict[str, str]:
         model_input=str(fp32_onnx),
         model_output=str(int8_onnx),
         weight_type=QuantType.QInt8,
-        per_channel=False,
+        per_channel=True,
         reduce_range=False,
     )
     if not int8_onnx.exists():
@@ -476,7 +548,7 @@ def _write_manifest(
         "quantization": {
             "method": "onnxruntime.quantization.quantize_dynamic",
             "weight_type": "QInt8",
-            "per_channel": False,
+            "per_channel": True,
             "reduce_range": False,
         },
         "consumed_by": "bh-sentinel-ml >= 0.2.1",
@@ -506,17 +578,22 @@ def _print_summary(*, manifest: dict[str, Any], output_dir: Path) -> None:
     print()
     print("Ready-to-paste snippet for config/ml/ml_config.yaml:")
     print()
-    print("  model_repo: bh-healthcare/distilbart-mnli-12-3-int8-onnx")
+    print("  model_repo: bh-healthcare/roberta-large-mnli-int8-onnx")
     print("  model_revision: <PASTE HF COMMIT SHA AFTER hf upload>")
     print(f'  model_sha256: "{sha}"')
     print()
-    print("Next step (Phase 2 step 2 in the release plan):")
-    print("  1. Author artifact_staging/README.md (HF model card).")
+    print("Next step:")
     print(
-        "  2. hf repos create bh-healthcare/distilbart-mnli-12-3-int8-onnx --type model --public"
+        "  1. Copy + substitute scripts/hf_card_template/README.md into artifact_staging/."
     )
-    print(f"  3. hf upload bh-healthcare/distilbart-mnli-12-3-int8-onnx {output_dir} .")
-    print("  4. Grab the resulting commit SHA from `hf api ...` for ml_config.yaml.")
+    print(
+        "  2. hf repo create bh-healthcare/roberta-large-mnli-int8-onnx --repo-type model --exist-ok"
+    )
+    print(f"  3. hf upload bh-healthcare/roberta-large-mnli-int8-onnx {output_dir} .")
+    print(
+        "  4. Capture commit SHA via "
+        "`curl https://huggingface.co/api/models/bh-healthcare/roberta-large-mnli-int8-onnx`"
+    )
     print()
 
 

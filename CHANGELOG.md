@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [ml-0.2.2] - 2026-05-13
+
+Hotfix for v0.2.1. The v0.2.1 release shipped with three compounding bugs that together made L2 silently non-functional for every user (L1+L3+L4 still ran fine via graceful degradation; `PipelineStatus.layer_2_transformer` was always `FAILED`). v0.2.1 has been yanked from PyPI; v0.2.2 is the recommended version.
+
+The root cause was that the v0.2.1 release-quality checks all passed in isolation but never actually exercised the published L2 inference path against the pinned artifact. v0.2.2 adds that gate (the `real_model`-marked `test_pinned_artifact_l2_inference.py` suite) to the Pre-Tag Checklist, and uses it to verify the new pinned artifact end-to-end before publishing.
+
+### Fixed
+
+- **Static-axes export bug:** `scripts/export_onnx.py` no longer passes `no_dynamic_axes=True` to `optimum.exporters.onnx.main_export()`. The v0.2.1 ONNX had `[2, 16]` (the optimum example dims) baked into its input shapes; at inference time `TransformerClassifier._infer_batch` fed tensors with different dims and ONNX Runtime rejected the shape mismatch. `_validate_onnx_io_contract()` is now hardened to require symbolic batch + sequence dimensions on both inputs, with a covering regression test (`test_validate_onnx_io_contract_rejects_static_input_axes` in default CI).
+- **`ZeroShotClassifier` default `entailment_index` corrected** from `0` to `2`. Both BART-large-MNLI and RoBERTa-large-MNLI use `id2label = {0: contradiction, 1: neutral, 2: entailment}` — the opposite class order from the originally-intended (rejected) `valhalla/distilbart-mnli-12-3`. With the v0.2.1 default of `0`, the runtime read contradiction probabilities and threshold-compared them as if they were entailment probabilities, so L2 emitted zero candidates on every input even after the static-axes fix.
+- **Source model swapped to `FacebookAI/roberta-large-mnli`** (from the original `facebook/bart-large-mnli` v0.2.1 fallback). Re-running the export against BART-large with the above two fixes surfaced a third, deeper problem: INT8 dynamic quantization collapses the classification-head discrimination on encoder-decoder transformers like BART. Empirical comparison on a clear-positive test (premise "I feel hopeless..." / hypothesis "expresses hopelessness"): FP32 BART-large emitted 0.998 entailment probability, INT8 BART-large emitted 0.24 (versus 0.06 for an unrelated control hypothesis — ~4x discrimination ratio vs FP32's ~3000x). RoBERTa-large is encoder-only and quantizes cleanly: INT8 preserves FP32 entailment probability to within <1% on the same test cases (0.9931 → 0.9932). The new pinned artifact is hosted at [`bh-healthcare/roberta-large-mnli-int8-onnx`](https://huggingface.co/bh-healthcare/roberta-large-mnli-int8-onnx); the previous `bh-healthcare/distilbart-mnli-12-3-int8-onnx` repo is no longer referenced by any pinned config (kept on HF Hub for audit history). Full source-selection narrative in [`docs/ml-artifact-provenance.md`](docs/ml-artifact-provenance.md).
+- **INT8 quantization recipe changed** from `per_channel=False` to `per_channel=True` in `scripts/export_onnx.py`. Per-channel scales (one per output channel) preserve discrimination on large transformer models; per-tensor scales (one per weight tensor) are too coarse and contributed to the BART-large quality collapse on top of the encoder-decoder issue.
+- **`ZeroShotClassifier` constructor** invocation in `bh-sentinel-core`'s pipeline now uses the corrected `entailment_index=2` default; no API change.
+
+### Added
+
+- **New end-to-end regression tests** in `packages/bh-sentinel-ml/tests/test_pinned_artifact_l2_inference.py` (marked `real_model`, opt-in for default CI but mandatory in the Pre-Tag Checklist):
+  - `test_real_pinned_artifact_l2_completes` — asserts `pipeline_status.layer_2_transformer == COMPLETED` against the real pinned artifact. Would have caught the v0.2.1 static-axes bug pre-release.
+  - `test_real_pinned_artifact_produces_l2_evidence` — asserts the model emits at least one L2-bearing flag on a high-acuity test text. Would have caught the v0.2.1 entailment-index bug AND the BART-large INT8 quality bug pre-release.
+- **`docs/release-process.md`** Pre-Tag Checklist now mandates running `pytest -m real_model packages/bh-sentinel-ml/tests/test_pinned_artifact_l2_inference.py` before tagging any `ml-v*` release.
+
+### Compatibility
+
+- The canonical HF model repo changed from `bh-healthcare/distilbart-mnli-12-3-int8-onnx` to `bh-healthcare/roberta-large-mnli-int8-onnx`. Existing on-disk HF snapshot caches from v0.2.1 are not reused (different repo path entirely). First call after upgrade re-downloads ~342MB. The old repo remains on HF Hub for audit history but is not referenced by any pinned config in `bh-sentinel-ml >= 0.2.2`.
+- `bh-sentinel-ml`'s `download-model` CLI `--repo` default flipped to match the new model repo.
+- No `bh-sentinel-core` bump in this release.
+- `pip install bh-sentinel-ml==0.2.1` shows a yanked-version warning. New installs of `bh-sentinel-ml` default to v0.2.2.
+
 ## [ml-0.2.1] - 2026-05-13
 
 Closes the v0.2.0 → v0.2.1 gap promised in the prior `[Unreleased] / Planned` block: ships the pinned ONNX artifact, the export script that produced it, and reproducible-report machinery in [`bh-sentinel-examples`](https://github.com/bh-healthcare/bh-sentinel-examples).
@@ -112,7 +140,8 @@ First release of `bh-sentinel-ml` as a Layer 2 add-on to `bh-sentinel-core`.
   CD-005a (auditory hallucinations), CD-005b (visual hallucinations),
   CD-005c (paranoid ideation), CD-005d (delusional thinking)
 
-[Unreleased]: https://github.com/bh-healthcare/bh-sentinel/compare/ml-v0.2.1...HEAD
+[Unreleased]: https://github.com/bh-healthcare/bh-sentinel/compare/ml-v0.2.2...HEAD
+[ml-0.2.2]: https://github.com/bh-healthcare/bh-sentinel/compare/ml-v0.2.1...ml-v0.2.2
 [ml-0.2.1]: https://github.com/bh-healthcare/bh-sentinel/compare/ml-v0.2.0...ml-v0.2.1
 [ml-0.2.0]: https://github.com/bh-healthcare/bh-sentinel/releases/tag/ml-v0.2.0
 [0.1.1]: https://github.com/bh-healthcare/bh-sentinel/compare/v0.1.0...core-v0.1.1

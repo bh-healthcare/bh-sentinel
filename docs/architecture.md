@@ -670,7 +670,7 @@ clinical_status:     [stable, mild_concern, moderate_concern, severe_concern]
 ```
 
 **Phased model development:**
-- **Phase A (immediate):** Zero-shot classification using an ONNX-exported NLI model. `bh-sentinel-ml >= 0.2.1` pins [`bh-healthcare/distilbart-mnli-12-3-int8-onnx`](https://huggingface.co/bh-healthcare/distilbart-mnli-12-3-int8-onnx) — an INT8 quantized export of `facebook/bart-large-mnli` (see [`docs/ml-artifact-provenance.md`](ml-artifact-provenance.md) for the license verification chain). No training data needed. Expected ~60-75% accuracy on clinical notes (lower than the 70-80% general benchmark due to clinical language complexity, negation patterns, and hedging). Consider also testing BiomedBERT as the NLI base for better medical language comprehension.
+- **Phase A (immediate):** Zero-shot classification using an ONNX-exported NLI model. `bh-sentinel-ml >= 0.2.2` pins [`bh-healthcare/roberta-large-mnli-int8-onnx`](https://huggingface.co/bh-healthcare/roberta-large-mnli-int8-onnx) — an INT8 quantized export of `FacebookAI/roberta-large-mnli` (see [`docs/ml-artifact-provenance.md`](ml-artifact-provenance.md) for the license verification chain and the rationale for RoBERTa-large over the originally-attempted distilbart and bart-large candidates). No training data needed. Expected ~60-75% accuracy on clinical notes (lower than the 70-80% general benchmark due to clinical language complexity, negation patterns, and hedging). Consider also testing BiomedBERT as the NLI base for better medical language comprehension.
 - **Phase B (after 500+ annotated notes):** Fine-tune DistilBERT (or distilled MentalBERT) with a multi-label classification head on de-identified clinical notes from your organization. Export to ONNX, quantize to INT8. Target: precision > 0.85, recall > 0.80 for CRITICAL flags.
 - **Phase C (ongoing):** Retraining pipeline. Clinician-reviewed flag corrections feed back into training set. New model versions are deployed as new package releases or container images.
 
@@ -1829,7 +1829,7 @@ No SageMaker costs. Transformer model runs in-process within the Lambda containe
 
 - [x] `bh-sentinel-ml` package scaffolding
 - [x] ONNX transformer inference layer (in-process, no network hop) via `TransformerClassifier`
-- [x] Zero-shot classification with BART-Large-MNLI baseline (INT8 ONNX pinned at [`bh-healthcare/distilbart-mnli-12-3-int8-onnx`](https://huggingface.co/bh-healthcare/distilbart-mnli-12-3-int8-onnx); hypothesis templates in `config/ml/zero_shot_hypotheses.yaml`)
+- [x] Zero-shot classification with RoBERTa-Large-MNLI baseline (INT8 ONNX pinned at [`bh-healthcare/roberta-large-mnli-int8-onnx`](https://huggingface.co/bh-healthcare/roberta-large-mnli-int8-onnx); hypothesis templates in `config/ml/zero_shot_hypotheses.yaml`)
 - [x] Hybrid model distribution: auto-download default + `BH_SENTINEL_ML_OFFLINE=1` production rail + SHA256 verify-on-load
 - [x] Transformer evidence_span generation (sentence-level winner span) — required for Criterion 4
 - [x] Transformer basis_description generation (static template, PHI-safe) — required for Criterion 4
