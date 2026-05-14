@@ -53,7 +53,8 @@ class ZeroShotClassifier:
             internally via entailment scoring.
         min_emit_confidence: calibrated-probability floor to emit a candidate.
         entailment_index: index in the logits array that represents
-            "entailment" (default 0 matches DistilBART-MNLI).
+            "entailment" (default 0 matches BART-large-MNLI's class order
+            and the distilbart-mnli family it was distilled into).
     """
 
     def __init__(

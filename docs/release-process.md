@@ -55,7 +55,7 @@ Run this checklist before pushing any release tag. CI enforces most of it, but t
 - [ ] `ruff check` and `ruff format --check` clean across both packages
 - [ ] Full core test suite green (`pytest packages/bh-sentinel-core/tests/`)
 - [ ] Full ml test suite green (`pytest packages/bh-sentinel-ml/tests/`)
-- [ ] Banned-string grep returns zero hits: `rg -i 'overstory|overstory health|overstory-bh|overstory-datalake|org_overstory'`
+- [ ] Banned-string grep returns zero hits — run the regex documented in [`.cursor/rules/no-real-org-names.mdc`](../.cursor/rules/no-real-org-names.mdc) across the working tree
 - [ ] `python -m build packages/<package>/` succeeds locally
 - [ ] Clean-venv smoke install of the locally-built wheel works end-to-end
 

@@ -49,28 +49,9 @@ for flag in result.flags:
 
 ## Model distribution
 
-`bh-sentinel-ml` uses a **hybrid** distribution strategy. The ~140MB INT8 ONNX model is not bundled in the wheel.
+`bh-sentinel-ml` uses a **hybrid** distribution strategy. The ~390MB INT8 ONNX model is not bundled in the wheel.
 
-> **Release note (v0.2.0 → v0.2.1):** v0.2.0 ships the full L2 infrastructure
-> (classifier, merge, calibration, CLI) but the default `ml_config.yaml`
-> still has a **placeholder** `model_revision: main` and an all-zeros
-> `model_sha256`. Neither `valhalla/distilbart-mnli-12-3` nor any of
-> the common ONNX mirrors publish a pinned INT8 artifact the SHA of
-> which we can commit to. The follow-up `bh-sentinel-ml 0.2.1` will:
->
-> 1. Ship a canonical ONNX export (pinned revision + pinned SHA256).
-> 2. Provide `scripts/export_onnx.py` for users who want to re-export
->    against their own base model.
-> 3. Publish reproducible L1-vs-L2 reports against the shared corpus
->    via the [`bh-sentinel-examples`](https://github.com/bh-healthcare/bh-sentinel-examples) repo.
->
-> Until `0.2.1` lands, the default auto-download path will fetch the
-> HF repo's current `main` revision (unpinned) and the SHA check will
-> fail -- meaning the production `BH_SENTINEL_ML_OFFLINE=1` rail is
-> the only currently-supported deployment path, with the operator
-> responsible for pinning their own SHA. See the
-> [`bh-sentinel-examples` README](https://github.com/bh-healthcare/bh-sentinel-examples#regenerating-the-real-model-report-bh-sentinel-ml-v021-prerequisite)
-> for the one-off reproduction flow.
+`v0.2.1` ships the canonical pinned artifact: a quantized ONNX export of [`facebook/bart-large-mnli`](https://huggingface.co/facebook/bart-large-mnli) hosted at [`bh-healthcare/distilbart-mnli-12-3-int8-onnx`](https://huggingface.co/bh-healthcare/distilbart-mnli-12-3-int8-onnx) on HF Hub. `model_revision` and `model_sha256` in [`config/ml/ml_config.yaml`](../../config/ml/ml_config.yaml) are real values pinned to the v0.2.1 release. Production `auto_download=True` works end-to-end — the verify-on-load SHA check passes against the published artifact. See [`docs/ml-artifact-provenance.md`](../../docs/ml-artifact-provenance.md) for the full source / license / verification chain, and [`scripts/export_onnx.py`](../../scripts/export_onnx.py) for the re-export workflow.
 
 **Dev / CI (unrestricted network):**
 `pip install bh-sentinel-ml` → first `analyze()` call fetches the pinned HuggingFace revision into a local cache directory. One-time ~30s, zero config.

@@ -7,13 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Planned for `bh-sentinel-ml 0.2.1`
+## [ml-0.2.1] - 2026-05-13
 
-- Pin a canonical ONNX export of the zero-shot baseline model with a real `model_revision` SHA and matching `model_sha256` in `config/ml/ml_config.yaml` (the v0.2.0 values are placeholders; production `auto_download=True` currently fails the verify-on-load SHA check as a result).
-- Ship a `scripts/export_onnx.py` helper for users who want to re-export locally against a different base model.
-- Publish the first reproducible L1-vs-L2 evaluation report against the shared corpus via the [bh-sentinel-examples](https://github.com/bh-healthcare/bh-sentinel-examples) repo.
+Closes the v0.2.0 → v0.2.1 gap promised in the prior `[Unreleased] / Planned` block: ships the pinned ONNX artifact, the export script that produced it, and reproducible-report machinery in [`bh-sentinel-examples`](https://github.com/bh-healthcare/bh-sentinel-examples).
 
-See the Release note in [`packages/bh-sentinel-ml/README.md`](packages/bh-sentinel-ml/README.md) for the current operator workaround (use the `BH_SENTINEL_ML_OFFLINE=1` rail with a locally-exported model).
+### Added
+
+- **Canonical ONNX artifact** published at [`bh-healthcare/distilbart-mnli-12-3-int8-onnx`](https://huggingface.co/bh-healthcare/distilbart-mnli-12-3-int8-onnx) on the HuggingFace Hub. `model_revision` and `model_sha256` in [`config/ml/ml_config.yaml`](config/ml/ml_config.yaml) are now real values (pinned commit `ef4a3a8e5dea3746000aa8a73fe5f1617a9289df`, INT8 ONNX SHA256 `1536ec8e38136b25b4a77286d83cafe95e7d48992d24a2e4c9b0dfb162b25dd0`). Production `auto_download=True` now works end-to-end — the verify-on-load SHA check passes.
+- **[`scripts/export_onnx.py`](scripts/export_onnx.py)** — operator tool that invokes optimum's ONNX exporter (via the Python API, not the CLI subprocess, for clean error visibility), INT8-quantizes the result with `onnxruntime.quantization.quantize_dynamic`, validates the input/output shape against the runtime contract, copies tokenizer files, and emits a `manifest.json` with full provenance. Includes a fail-fast precondition check that surfaces torch ↔ optimum version skews in milliseconds instead of after the heavy subprocess fails mid-stream.
+- **[`scripts/hf_card_template/`](scripts/hf_card_template/)** — HF model card template (`README.md`) + MIT `LICENSE` template with Meta + bh-healthcare attribution, plus a `HOW_TO_USE.md` with a one-liner substitution script. Operator copies these into `artifact_staging/` after `export_onnx.py` runs.
+- **[`docs/ml-artifact-provenance.md`](docs/ml-artifact-provenance.md)** — single source of truth for the licensing chain and verification gate. Records why `valhalla/distilbart-mnli-12-3` was rejected (no declared license anywhere — `cardData.license: None`, no `LICENSE` file in the source snapshot, no `license:*` tag) and why the teacher model `facebook/bart-large-mnli` (explicit `license:mit`) was chosen as the fallback. Includes the re-pinning workflow for future releases.
+- **`bh-sentinel-ml`'s `download-model` CLI default `--repo`** now points at `bh-healthcare/distilbart-mnli-12-3-int8-onnx` (was `valhalla/distilbart-mnli-12-3`). Help text already promised "default matches ml_config.yaml default" — that contract is now honored.
+- **End-to-end tests for `scripts/export_onnx.py`** at [`packages/bh-sentinel-ml/tests/test_export_onnx_script.py`](packages/bh-sentinel-ml/tests/test_export_onnx_script.py). 11 unit tests (run in default CI) cover ONNX I/O contract validation, tokenizer copy semantics, manifest writing, SHA256 computation. 1 `real_model`-marked end-to-end test (opt-in) exercises the full `main()` path against a small public NLI model.
+
+### Changed
+
+- **Pinned source model:** `valhalla/distilbart-mnli-12-3` → `facebook/bart-large-mnli` (per the v0.2.1 license verification gate). The HF artifact repo name retains the historical `distilbart-mnli-12-3-int8-onnx` URL for stability; the actual source is BART-Large-MNLI per [`docs/ml-artifact-provenance.md`](docs/ml-artifact-provenance.md). Operational trade-offs from this swap: ~390MB INT8 (vs. ~140MB for the rejected source), ~60–120s first-call download (vs. ~30s), ~80–120ms per-pair inference latency on CPU (vs. ~30ms). Upstream MNLI accuracy is slightly higher (89.9/90.01 vs. 88.1/88.19 matched/mismatched).
+- **`training/export.py`** stub updated to point operators at `scripts/export_onnx.py` for the baseline export path. The `training/` directory remains the home for the v0.3+ fine-tuned-organizational-model export workflow.
+
+### Fixed
+
+- **PyPI maintainer email** in [`packages/bh-sentinel-ml/pyproject.toml`](packages/bh-sentinel-ml/pyproject.toml) and [`packages/bh-sentinel-core/pyproject.toml`](packages/bh-sentinel-core/pyproject.toml): replaced the unreachable scaffold placeholder `oss@bh-healthcare.github.io` (`.github.io` domains cannot receive email) with the maintainer-controlled forwarder `oss@bh-healthcare.org`. The PyPI project page now links to a deliverable address. No runtime effect; metadata-only.
+
+### Compatibility
+
+- The canonical model repo changed from `valhalla/distilbart-mnli-12-3` to `bh-healthcare/distilbart-mnli-12-3-int8-onnx`. **Existing on-disk HF snapshot caches from 0.2.0 are not reused.** First call after upgrade re-downloads ~390MB into the platformdirs cache. Operators on the `BH_SENTINEL_ML_OFFLINE=1` rail must rebuild their container image with the new `bh-sentinel-ml download-model` invocation (which now defaults to the new repo).
+- `bh-sentinel-ml 0.2.1` still requires `bh-sentinel-core>=0.1.1,<1`. No core bump in this release.
 
 ## [ml-0.2.0] - 2026-04-17
 
@@ -93,7 +112,8 @@ First release of `bh-sentinel-ml` as a Layer 2 add-on to `bh-sentinel-core`.
   CD-005a (auditory hallucinations), CD-005b (visual hallucinations),
   CD-005c (paranoid ideation), CD-005d (delusional thinking)
 
-[Unreleased]: https://github.com/bh-healthcare/bh-sentinel/compare/ml-v0.2.0...HEAD
+[Unreleased]: https://github.com/bh-healthcare/bh-sentinel/compare/ml-v0.2.1...HEAD
+[ml-0.2.1]: https://github.com/bh-healthcare/bh-sentinel/compare/ml-v0.2.0...ml-v0.2.1
 [ml-0.2.0]: https://github.com/bh-healthcare/bh-sentinel/releases/tag/ml-v0.2.0
 [0.1.1]: https://github.com/bh-healthcare/bh-sentinel/compare/v0.1.0...core-v0.1.1
 [0.1.0]: https://github.com/bh-healthcare/bh-sentinel/releases/tag/v0.1.0
