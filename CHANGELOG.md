@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [ml-0.2.3] - 2026-05-29
+
+### Added
+
+- **`ZeroShotClassifier.score_flags()` + `FlagScore`** — a Layer 2 diagnostic API that returns, for every flag hypothesis, the best-scoring sentence with its raw entailment probability, calibrated score, emit decision (`would_emit`), and margin to the `min_emit_confidence` floor — **including sub-threshold flags that `classify()` drops**. Intended for threshold analysis and Layer 2 precision/recall evaluation; it does not change production emission behavior (`classify()` is unchanged). `FlagScore` is re-exported from `bh_sentinel.ml`.
+
+### Compatibility
+
+- No `bh-sentinel-core` bump required. `score_flags()` is self-contained within `bh-sentinel-ml`; the dependency floor stays `bh-sentinel-core>=0.1.1,<1` and `_MIN_CORE_VERSION` is unchanged. (The independent `bh-sentinel-core 0.1.2` detection-layer fix is recommended for correct L1/L2 bucketing in downstream reports, but is not required to import or run `bh-sentinel-ml 0.2.3`.)
+
+## [0.1.2] - 2026-05-29
+
+### Fixed
+
+- **Layer 2 detection-layer attribution.** `RulesEngine._hydrate_flags` hard-coded `detection_layer=DetectionLayer.PATTERN_MATCH` for every emitted flag, so transformer (Layer 2) candidates were mislabeled as Layer 1. Any consumer bucketing by `detection_layer` (e.g. the `bh-sentinel-examples` L1-vs-L2 report) saw an always-empty "L2-only" set and could not distinguish Layer 2 emissions. Flags are now labeled per candidate via the new `RulesEngine._detection_layer_for`: Layer 2 candidates carry an empty `pattern_text` (set by `ZeroShotClassifier._build_candidate`) and are tagged `TRANSFORMER`; Layer 1 candidates always set a non-empty `pattern_text` and remain `PATTERN_MATCH`. Covered by new attribution tests in `packages/bh-sentinel-core/tests/test_rules_engine.py`.
+
+### Compatibility
+
+- Behavior-only fix; no API change. The only observable difference is that `Flag.detection_layer` now reports `TRANSFORMER` for Layer 2 flags (previously always `PATTERN_MATCH`). Fully backward-compatible with 0.1.1 callers that do not branch on `detection_layer`.
+
 ## [ml-0.2.2] - 2026-05-13
 
 Hotfix for v0.2.1. The v0.2.1 release shipped with three compounding bugs that together made L2 silently non-functional for every user (L1+L3+L4 still ran fine via graceful degradation; `PipelineStatus.layer_2_transformer` was always `FAILED`). v0.2.1 has been yanked from PyPI; v0.2.2 is the recommended version.
@@ -140,9 +160,11 @@ First release of `bh-sentinel-ml` as a Layer 2 add-on to `bh-sentinel-core`.
   CD-005a (auditory hallucinations), CD-005b (visual hallucinations),
   CD-005c (paranoid ideation), CD-005d (delusional thinking)
 
-[Unreleased]: https://github.com/bh-healthcare/bh-sentinel/compare/ml-v0.2.2...HEAD
+[Unreleased]: https://github.com/bh-healthcare/bh-sentinel/compare/ml-v0.2.3...HEAD
+[ml-0.2.3]: https://github.com/bh-healthcare/bh-sentinel/compare/ml-v0.2.2...ml-v0.2.3
 [ml-0.2.2]: https://github.com/bh-healthcare/bh-sentinel/compare/ml-v0.2.1...ml-v0.2.2
 [ml-0.2.1]: https://github.com/bh-healthcare/bh-sentinel/compare/ml-v0.2.0...ml-v0.2.1
 [ml-0.2.0]: https://github.com/bh-healthcare/bh-sentinel/releases/tag/ml-v0.2.0
+[0.1.2]: https://github.com/bh-healthcare/bh-sentinel/compare/core-v0.1.1...core-v0.1.2
 [0.1.1]: https://github.com/bh-healthcare/bh-sentinel/compare/v0.1.0...core-v0.1.1
 [0.1.0]: https://github.com/bh-healthcare/bh-sentinel/releases/tag/v0.1.0

@@ -231,7 +231,7 @@ class RulesEngine:
                     name=c.name,
                     severity=Severity(final_severity),
                     confidence=c.confidence,
-                    detection_layer=DetectionLayer.PATTERN_MATCH,
+                    detection_layer=self._detection_layer_for(c),
                     matched_context_hint=c.matched_context_hint,
                     basis_description=c.basis_description,
                     evidence_span=EvidenceSpan(
@@ -244,6 +244,13 @@ class RulesEngine:
             )
 
         return flags
+
+    @staticmethod
+    def _detection_layer_for(candidate: PatternMatchCandidate) -> DetectionLayer:
+        """Layer 2 candidates use an empty ``pattern_text``; Layer 1 always sets it."""
+        if candidate.pattern_text == "":
+            return DetectionLayer.TRANSFORMER
+        return DetectionLayer.PATTERN_MATCH
 
 
 @dataclass(slots=True)

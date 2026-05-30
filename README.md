@@ -9,7 +9,7 @@
 [![PyPI downloads — bh-sentinel-core](https://static.pepy.tech/personalized-badge/bh-sentinel-core?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=core-downloads)](https://pepy.tech/projects/bh-sentinel-core)
 [![PyPI downloads — bh-sentinel-ml](https://static.pepy.tech/personalized-badge/bh-sentinel-ml?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=ml-downloads)](https://pepy.tech/projects/bh-sentinel-ml)
 
-**Status:** v0.2.2 shipped. `bh-sentinel-core 0.1.1` (Layer 1 + Layer 3 + Layer 4) and `bh-sentinel-ml 0.2.2` (Layer 2 zero-shot transformer with the canonical pinned INT8 ONNX artifact under [`bh-healthcare/roberta-large-mnli-int8-onnx`](https://huggingface.co/bh-healthcare/roberta-large-mnli-int8-onnx) on HF Hub) are both on PyPI. v0.2.1 was a same-day hotfix target: it shipped a non-functional L2 path (three compounding bugs detailed in `CHANGELOG.md [ml-0.2.2]`); v0.2.2 fixes everything and switches to RoBERTa-large-MNLI as the pinned source — an encoder-only architecture that, unlike BART-large, quantizes cleanly under INT8 dynamic quantization. v0.2.1 has been yanked from PyPI. Reference AWS deployment + validated calibration land in v0.3. Not yet production-ready -- clinical validation and calibration against labeled clinical data are a v0.3 deliverable.
+**Status:** `bh-sentinel-core 0.1.2` (Layer 1 + Layer 3 + Layer 4) and `bh-sentinel-ml 0.2.3` (Layer 2 zero-shot transformer with the canonical pinned INT8 ONNX artifact under [`bh-healthcare/roberta-large-mnli-int8-onnx`](https://huggingface.co/bh-healthcare/roberta-large-mnli-int8-onnx) on HF Hub) are both on PyPI. The 0.1.2 / 0.2.3 patch pair fixes Layer 2 detection-layer attribution — transformer (Layer 2) flags were mislabeled `pattern_match`, so any consumer bucketing by `detection_layer` saw an always-empty L2-only set — and adds the `score_flags()` / `FlagScore` Layer 2 diagnostic API (see `CHANGELOG.md [0.1.2]` and `[ml-0.2.3]`). The earlier v0.2.1 was a yanked same-day hotfix target whose non-functional L2 path (three compounding bugs detailed in `CHANGELOG.md [ml-0.2.2]`) was fixed in v0.2.2, which also switched to RoBERTa-large-MNLI as the pinned source — an encoder-only architecture that, unlike BART-large, quantizes cleanly under INT8 dynamic quantization. Reference AWS deployment + validated calibration land in v0.3. Not yet production-ready -- clinical validation and calibration against labeled clinical data are a v0.3 deliverable.
 
 ---
 
@@ -317,7 +317,7 @@ Full L1 validation source: `packages/bh-sentinel-core/tests/test_real_world_vali
 
 ### What Layer 2 adds (v0.2)
 
-`bh-sentinel-ml 0.2.2` ships the full L2 inference path: sentence-level zero-shot NLI over the same flag taxonomy, candidate merge with the L1 results, and corroboration metadata on every flag. Structurally the pipeline now runs all three layers in parallel and surfaces L1-only / L2-only / corroborated detections on every request.
+`bh-sentinel-ml 0.2.3` ships the full L2 inference path: sentence-level zero-shot NLI over the same flag taxonomy, candidate merge with the L1 results, and corroboration metadata on every flag. Structurally the pipeline now runs all three layers in parallel and surfaces L1-only / L2-only / corroborated detections on every request (correct `detection_layer` attribution requires `bh-sentinel-core>=0.1.2`).
 
 **What L2 is designed to target on the literary corpus** (hypotheses from [`config/ml/zero_shot_hypotheses.yaml`](config/ml/zero_shot_hypotheses.yaml)):
 
@@ -350,7 +350,7 @@ bh-sentinel/
 │   ├── publish-core.yml               # Tag core-v*  → publish bh-sentinel-core
 │   └── publish-ml.yml                 # Tag ml-v*    → publish bh-sentinel-ml
 ├── packages/
-│   ├── bh-sentinel-core/              # PyPI: bh-sentinel-core (0.1.1)
+│   ├── bh-sentinel-core/              # PyPI: bh-sentinel-core (0.1.2)
 │   │   ├── src/bh_sentinel/core/
 │   │   │   ├── pattern_matcher.py     # Layer 1: compiled regex, negation, temporal
 │   │   │   ├── rules_engine.py        # Layer 4: business logic rules
@@ -364,7 +364,7 @@ bh-sentinel/
 │   │   │   └── models/                # Pydantic request/response models
 │   │   ├── pyproject.toml
 │   │   └── README.md
-│   └── bh-sentinel-ml/                # PyPI: bh-sentinel-ml (0.2.0)
+│   └── bh-sentinel-ml/                # PyPI: bh-sentinel-ml (0.2.3)
 │       ├── src/bh_sentinel/ml/
 │       │   ├── transformer.py         # ONNX Runtime inference + SHA256 verify-on-load
 │       │   ├── zero_shot.py           # Zero-shot NLI classification
@@ -485,7 +485,7 @@ bh-sentinel is designed to integrate with bh-audit-logger for compliance trackin
 - [x] CLI: `download-model`, `calibrate`, `evaluate`
 - [x] Shared L1-vs-L2 diagnostic corpus at `config/eval/real_world_corpus.yaml`
 - [x] Per-package release workflows (`core-v*` / `ml-v*`)
-- [x] `bh-sentinel-core 0.1.1` and `bh-sentinel-ml 0.2.2` on PyPI
+- [x] `bh-sentinel-core 0.1.2` and `bh-sentinel-ml 0.2.3` on PyPI
 
 ### Next (v0.3) -- deployment + validated calibration
 - [ ] `bh-sentinel-examples` companion repository (see [ecosystem](#relationship-to-bh-healthcare)): reproducible local Layer 2 eval against real clinical corpora with the pinned INT8 model pre-downloaded

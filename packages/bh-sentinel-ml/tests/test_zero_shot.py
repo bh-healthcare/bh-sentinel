@@ -247,6 +247,27 @@ def test_confidence_is_calibrated_not_raw_softmax() -> None:
     assert clf.classify(pre) == []
 
 
+def test_score_flags_includes_sub_threshold() -> None:
+    sh002_hyp = "The speaker describes suicidal ideation."
+    sentence = "I want to end my life."
+    transformer = _StubTransformer({(sentence, sh002_hyp): [5.0, -2.0, -3.0]})
+    clf = _make_classifier(
+        transformer,
+        hypotheses={"SH-002": sh002_hyp},
+        min_emit_confidence=1.01,
+    )
+    pre = _preprocessed(sentence)
+    assert clf.classify(pre) == []
+    scores = clf.score_flags(pre)
+    assert len(scores) == 1
+    score = scores[0]
+    assert score.flag_id == "SH-002"
+    assert score.raw_entailment > 0.9
+    assert score.calibrated_score > 0.9
+    assert score.would_emit is False
+    assert score.margin_to_emit < 0
+
+
 def test_inference_error_is_swallowed_gracefully() -> None:
     """Architectural guarantee: zero-shot classify never raises
     InferenceError. The pipeline catches it and marks L2 FAILED, but

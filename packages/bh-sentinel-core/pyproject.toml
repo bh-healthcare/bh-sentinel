@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "bh-sentinel-core"
-version = "0.1.1"
+version = "0.1.2"
 description = "Clinical decision support: pattern-based safety signal detection for behavioral health. Not a diagnostic tool."
 readme = "README.md"
 license = "Apache-2.0"

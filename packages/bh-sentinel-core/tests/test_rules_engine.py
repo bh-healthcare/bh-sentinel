@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from bh_sentinel.core._types import EmotionScores, PatternMatchCandidate
+from bh_sentinel.core.models.flags import DetectionLayer
+from bh_sentinel.core.rules_engine import RulesEngine
 
 
 def make_candidate(**overrides) -> PatternMatchCandidate:
@@ -703,3 +705,38 @@ class TestEdgeCases:
         # Passing l2_candidates=None should not raise
         result = rules_engine.evaluate(candidates, empty_emotions(), l2_candidates=None)
         assert len(result.flags) == 1
+
+
+# ---------------------------------------------------------------------------
+# Detection-layer attribution (regression)
+#
+# Before this fix, _hydrate_flags hard-coded detection_layer=PATTERN_MATCH for
+# every flag, so Layer 2 (transformer) emissions were mislabeled as Layer 1.
+# Downstream (run_eval.py) bucketed by detection_layer, so L2-only emissions
+# were silently invisible. L2 candidates carry an empty pattern_text (set by
+# ZeroShotClassifier._build_candidate); L1 candidates always set a non-empty
+# pattern_text. _detection_layer_for distinguishes them on that basis.
+# ---------------------------------------------------------------------------
+class TestDetectionLayerAttribution:
+    def test_empty_pattern_text_maps_to_transformer(self):
+        l2 = make_candidate(flag_id="CD-001", pattern_text="")
+        assert RulesEngine._detection_layer_for(l2) is DetectionLayer.TRANSFORMER
+
+    def test_nonempty_pattern_text_maps_to_pattern_match(self):
+        l1 = make_candidate(flag_id="SH-001", pattern_text="kill myself")
+        assert RulesEngine._detection_layer_for(l1) is DetectionLayer.PATTERN_MATCH
+
+    def test_evaluate_labels_each_flag_by_its_layer(self, rules_engine):
+        """A mixed L1 + L2 working set must hydrate each flag with its own layer."""
+        l1 = make_candidate(flag_id="SH-001", confidence=0.92, pattern_text="rope")
+        l2 = make_candidate(
+            flag_id="CD-001",
+            domain="clinical_deterioration",
+            default_severity="HIGH",
+            confidence=0.85,
+            pattern_text="",
+        )
+        result = rules_engine.evaluate([l1, l2], empty_emotions())
+        by_id = {f.flag_id: f for f in result.flags}
+        assert by_id["SH-001"].detection_layer is DetectionLayer.PATTERN_MATCH
+        assert by_id["CD-001"].detection_layer is DetectionLayer.TRANSFORMER
