@@ -7,7 +7,7 @@ def test_version_exists():
     from bh_sentinel.ml import __version__
 
     assert isinstance(__version__, str)
-    assert __version__ == "0.2.2"
+    assert __version__ == "0.2.3"
 
 
 def test_all_exists():
@@ -21,6 +21,7 @@ def test_classes_importable():
     from bh_sentinel.ml import (
         Calibrator,
         FixedDiscount,
+        FlagScore,
         InferenceError,
         MergeResult,
         ModelIntegrityError,
@@ -35,6 +36,7 @@ def test_classes_importable():
 
     assert callable(TransformerClassifier)
     assert callable(ZeroShotClassifier)
+    assert FlagScore is not None
     assert callable(FixedDiscount)
     assert callable(TemperatureScaling)
     assert callable(compute_ece)

@@ -7,7 +7,7 @@ def test_version_exists():
     from bh_sentinel.core import __version__
 
     assert isinstance(__version__, str)
-    assert __version__ == "0.1.1"
+    assert __version__ == "0.1.2"
 
 
 def test_all_exists():

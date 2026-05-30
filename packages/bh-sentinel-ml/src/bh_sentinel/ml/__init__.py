@@ -3,7 +3,7 @@
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as _pkg_version
 
-__version__ = "0.2.2"
+__version__ = "0.2.3"
 
 _MIN_CORE_VERSION: tuple[int, int, int] = (0, 1, 1)
 """Minimum bh-sentinel-core release that exposes the Pipeline kwargs bh-sentinel-ml depends on."""
@@ -69,10 +69,11 @@ from bh_sentinel.ml.exceptions import (  # noqa: E402
 from bh_sentinel.ml.merge import MergeResult, merge_candidates  # noqa: E402
 from bh_sentinel.ml.model_cache import resolve_model_path  # noqa: E402
 from bh_sentinel.ml.transformer import TransformerClassifier  # noqa: E402
-from bh_sentinel.ml.zero_shot import ZeroShotClassifier  # noqa: E402
+from bh_sentinel.ml.zero_shot import FlagScore, ZeroShotClassifier  # noqa: E402
 
 __all__ = [
     "__version__",
+    "FlagScore",
     "TransformerClassifier",
     "ZeroShotClassifier",
     "Calibrator",

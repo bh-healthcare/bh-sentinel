@@ -25,6 +25,7 @@ PHI safety:
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
@@ -36,7 +37,30 @@ from bh_sentinel.core._types import (
 from bh_sentinel.core.taxonomy import FlagTaxonomy
 from bh_sentinel.core.temporal_detector import TemporalDetector
 
+from bh_sentinel.ml.calibration import softmax
+
 _CONTEXT_HINT_MAX_LEN = 80
+
+__all__ = ["FlagScore", "ZeroShotClassifier"]
+
+
+@dataclass(frozen=True, slots=True)
+class FlagScore:
+    """Per-flag Layer 2 score diagnostic for threshold tuning and evaluation.
+
+    ``raw_entailment`` is the softmax entailment probability before calibration.
+    ``calibrated_score`` applies the configured calibrator (e.g. FixedDiscount).
+    ``would_emit`` is True when ``calibrated_score >= min_emit_confidence``.
+    """
+
+    flag_id: str
+    best_sentence_index: int
+    raw_entailment: float
+    calibrated_score: float
+    min_emit_confidence: float
+    calibration_discount: float
+    would_emit: bool
+    margin_to_emit: float
 
 
 class ZeroShotClassifier:
@@ -88,10 +112,18 @@ class ZeroShotClassifier:
             if self._taxonomy.get_flag(flag_id) is not None:
                 self._hypotheses[flag_id] = hyp
 
-    def classify(self, preprocessed: PreprocessedText) -> list[PatternMatchCandidate]:
+    def _calibration_discount(self) -> float:
+        factor = getattr(self._calibrator, "_factor", None)
+        if factor is not None:
+            return float(factor)
+        return 1.0
+
+    def _infer_entailment_matrices(
+        self, preprocessed: PreprocessedText
+    ) -> tuple[np.ndarray, np.ndarray, list[str], list[SentenceBoundary]] | None:
         sentences = preprocessed.sentences
         if not sentences or not self._hypotheses:
-            return []
+            return None
 
         flag_ids = list(self._hypotheses.keys())
         hyp_list = [self._hypotheses[f] for f in flag_ids]
@@ -104,16 +136,57 @@ class ZeroShotClassifier:
                 hypotheses.append(hyp)
 
         logits = self._transformer.infer(premises, hypotheses)
-        probs = self._calibrator.calibrate(np.asarray(logits))
+        logits_arr = np.asarray(logits, dtype=np.float32)
+        raw_probs = softmax(logits_arr)
+        calibrated_probs = self._calibrator.calibrate(logits_arr)
 
         n_sent = len(sentences)
         n_flag = len(flag_ids)
-        # Reshape from (n_sent * n_flag, C) back to per-sentence-per-flag.
-        entail = probs[:, self._entailment_index].reshape(n_sent, n_flag)
+        raw_entail = raw_probs[:, self._entailment_index].reshape(n_sent, n_flag)
+        calibrated_entail = calibrated_probs[:, self._entailment_index].reshape(n_sent, n_flag)
+        return raw_entail, calibrated_entail, flag_ids, sentences
 
+    def score_flags(self, preprocessed: PreprocessedText) -> list[FlagScore]:
+        """Return per-flag best-sentence scores, including sub-threshold flags."""
+        matrices = self._infer_entailment_matrices(preprocessed)
+        if matrices is None:
+            return []
+
+        raw_entail, calibrated_entail, flag_ids, sentences = matrices
+        discount = self._calibration_discount()
+        scores: list[FlagScore] = []
+
+        for flag_col, flag_id in enumerate(flag_ids):
+            raw_column = raw_entail[:, flag_col]
+            cal_column = calibrated_entail[:, flag_col]
+            best_sent_idx = int(np.argmax(cal_column))
+            raw_score = float(raw_column[best_sent_idx])
+            calibrated_score = float(cal_column[best_sent_idx])
+            would_emit = calibrated_score >= self._min_conf
+            scores.append(
+                FlagScore(
+                    flag_id=flag_id,
+                    best_sentence_index=sentences[best_sent_idx].index,
+                    raw_entailment=raw_score,
+                    calibrated_score=calibrated_score,
+                    min_emit_confidence=self._min_conf,
+                    calibration_discount=discount,
+                    would_emit=would_emit,
+                    margin_to_emit=calibrated_score - self._min_conf,
+                )
+            )
+
+        return scores
+
+    def classify(self, preprocessed: PreprocessedText) -> list[PatternMatchCandidate]:
+        matrices = self._infer_entailment_matrices(preprocessed)
+        if matrices is None:
+            return []
+
+        _, calibrated_entail, flag_ids, sentences = matrices
         candidates: list[PatternMatchCandidate] = []
         for flag_col, flag_id in enumerate(flag_ids):
-            column = entail[:, flag_col]
+            column = calibrated_entail[:, flag_col]
             best_sent_idx = int(np.argmax(column))
             best_score = float(column[best_sent_idx])
             if best_score < self._min_conf:

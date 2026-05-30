@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "bh-sentinel-ml"
-version = "0.2.2"
+version = "0.2.3"
 description = "Transformer-based clinical safety signal detection for behavioral health systems"
 readme = "README.md"
 license = "Apache-2.0"

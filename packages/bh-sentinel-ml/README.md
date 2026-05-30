@@ -55,6 +55,8 @@ for flag in result.flags:
 
 > **Upgrade note for v0.2.1 users:** the v0.2.1 release shipped a non-functional L2 path — the ONNX had static input axes that crashed inference, and L2 fell back to graceful-degradation `FAILED` status for every request. v0.2.2 ships a re-exported artifact from a different source (RoBERTa-large-MNLI, an encoder-only architecture that quantizes cleanly under INT8) with verified end-to-end discrimination. v0.2.1 has been yanked from PyPI. `pip install --upgrade bh-sentinel-ml` lands on v0.2.2.
 
+> **v0.2.3** adds the `score_flags()` / `FlagScore` Layer 2 diagnostic API — per-flag raw entailment + calibrated scores (including sub-threshold flags that `classify()` drops) for threshold and precision/recall analysis. No change to production emission behavior, and no `bh-sentinel-core` bump required.
+
 **Dev / CI (unrestricted network):**
 `pip install bh-sentinel-ml` → first `analyze()` call fetches the pinned HuggingFace revision into a local cache directory. One-time ~30s, zero config.
 
